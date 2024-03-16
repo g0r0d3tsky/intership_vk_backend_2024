@@ -25,7 +25,7 @@ func NewUserMiddleware(service UserService) *UserMiddleware {
 	return &UserMiddleware{service: service}
 }
 
-func (m *UserMiddleware) authenticate(next http.Handler) http.Handler {
+func (m *UserMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Vary", "Authorization")
 		authorizationHeader := r.Header.Get("Authorization")
@@ -58,7 +58,7 @@ func (m *UserMiddleware) authenticate(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-func (m *UserMiddleware) requireAdmin(next http.HandlerFunc) http.HandlerFunc {
+func (m *UserMiddleware) RequireAdmin(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user, ok := r.Context().Value(userCtx).(*domain.User)
 		if !ok {

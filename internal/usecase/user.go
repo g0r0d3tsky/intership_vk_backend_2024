@@ -40,6 +40,14 @@ func NewUserService(repo UserRepo) *UserService {
 	return &UserService{repo: repo}
 }
 
+func (s *UserService) GetUser(ctx context.Context, login string, password string) (*domain.User, error) {
+	user, err := s.repo.GetUser(ctx, login, password)
+	if err != nil {
+		return nil, fmt.Errorf("getting user: %w", err)
+	}
+	return user, nil
+}
+
 // TODO: validation?
 func (s *UserService) CreateUser(ctx context.Context, u *domain.User) error {
 	err := s.repo.CreateUser(ctx, u)

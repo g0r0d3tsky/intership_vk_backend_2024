@@ -11,7 +11,7 @@ type StorageActor struct {
 	db *pgxpool.Pool
 }
 
-func New(dbPool *pgxpool.Pool) StorageActor {
+func NewStorageActor(dbPool *pgxpool.Pool) StorageActor {
 	StorageActor := StorageActor{
 		db: dbPool,
 	}
@@ -87,7 +87,7 @@ func (s *StorageActor) GetActors(ctx context.Context) (map[*domain.Actor][]*doma
 
 	return actorFilms, nil
 }
-func (s *StorageMovie) DeleteActor(ctx context.Context, actorID uuid.UUID) error {
+func (s *StorageActor) DeleteActor(ctx context.Context, actorID uuid.UUID) error {
 	if _, err := s.db.Exec(ctx,
 		`DELETE FROM "movies" WHERE id=$1`,
 		actorID,

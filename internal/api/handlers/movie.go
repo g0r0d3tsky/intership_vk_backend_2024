@@ -5,8 +5,9 @@ import (
 	"cinema_service/internal/domain"
 	"context"
 	"encoding/json"
-	"github.com/google/uuid"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 type MovieService interface {
@@ -25,6 +26,15 @@ func NewMovieHandler(service MovieService) *MovieHandler {
 	return &MovieHandler{service: service}
 }
 
+// CreateMovieHandler @Summary Create Movie
+// @Description Creates a new movie
+// @Tags Movies
+// @Accept json
+// @Param body models.Movie true "Movie object"
+// @Success 201 "Movie created successfully"
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /movies [post]
 func (h *MovieHandler) CreateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	var input models.Movie
 	err := json.NewDecoder(r.Body).Decode(&input)
@@ -48,8 +58,18 @@ func (h *MovieHandler) CreateMovieHandler(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusCreated)
 }
 
+// UpdateMovieHandler @Summary Update Movie
+// @Description Updates an existing movie
+// @Tags Movies
+// @Accept json
+// @Param movie_id query string true "Movie ID"
+// @Param body models.Movie true "Movie object"
+// @Success 200 "Movie updated successfully"
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /movies [put]
 func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request) {
-	movieIDStr := r.URL.Query().Get("movie_id")
+	movieIDStr := r.URL.Query().Get("id")
 	_, err := uuid.Parse(movieIDStr)
 	if err != nil {
 		http.Error(w, "Invalid movie ID", http.StatusBadRequest)
@@ -77,8 +97,16 @@ func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusOK)
 }
 
+// @Summary Delete Movie
+// @Description Deletes a movie
+// @Tags Movies
+// @Param movie_id query string true "Movie ID"
+// @Success 200 "Movie deleted successfully"
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /movies [delete]
 func (h *MovieHandler) DeleteMovieHandler(w http.ResponseWriter, r *http.Request) {
-	movieIDStr := r.URL.Query().Get("movie_id")
+	movieIDStr := r.URL.Query().Get("id")
 	movieID, err := uuid.Parse(movieIDStr)
 	if err != nil {
 		http.Error(w, "Invalid movie ID", http.StatusBadRequest)
@@ -94,6 +122,13 @@ func (h *MovieHandler) DeleteMovieHandler(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusOK)
 }
 
+// GetMoviesFilterHandler @Summary Get Movies by Filter
+// @Description Retrieves movies based on a filter
+// @Tags Movies
+// @Param filter query string true "Filter"
+// @Success 200 {array} models.Movie
+// @Failure 500 {object} ErrorResponse
+// @Router /movies [get]
 func (h *MovieHandler) GetMoviesFilterHandler(w http.ResponseWriter, r *http.Request) {
 	filter := r.URL.Query().Get("filter")
 
@@ -109,6 +144,13 @@ func (h *MovieHandler) GetMoviesFilterHandler(w http.ResponseWriter, r *http.Req
 	}
 }
 
+// GetMoviesBySnippetHandler @Summary Get Movies by Snippet
+// @Description Retrieves movies based on a snippet
+// @Tags Movies
+// @Param snippet query string true "Snippet"
+// @Success 200 {array} models.Movie
+// @Failure 500 {object} ErrorResponse
+// @Router /movies/snippet [get]
 func (h *MovieHandler) GetMoviesBySnippetHandler(w http.ResponseWriter, r *http.Request) {
 	snippet := r.URL.Query().Get("snippet")
 
@@ -122,4 +164,15 @@ func (h *MovieHandler) GetMoviesBySnippetHandler(w http.ResponseWriter, r *http.
 	if err != nil {
 		return
 	}
+}
+
+// TODO: authorization
+func (h *MovieHandler) RegisterMovie(mux *http.ServeMux,
+	authentication Middleware, authorization Middleware) *http.ServeMux {
+	mux.HandleFunc("GET /api/v1/movies/filter/{filter}", authentication(h.GetMoviesFilterHandler))
+	mux.HandleFunc("GET /api/v1/movies/snippet/{snippet}", authentication(h.GetMoviesBySnippetHandler))
+	mux.HandleFunc("POST /api/v1/movies/", authentication(authorization(h.CreateMovieHandler)))
+	mux.HandleFunc("PUT /api/v1/movies/{id}", authentication(authorization(h.UpdateMovieHandler)))
+	mux.HandleFunc("DELETE /api/v1/movies/{id}", authentication(authorization(h.DeleteMovieHandler)))
+	return mux
 }

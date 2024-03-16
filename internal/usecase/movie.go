@@ -4,13 +4,14 @@ import (
 	"cinema_service/internal/domain"
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	"sort"
+
+	"github.com/google/uuid"
 )
 
 type MovieRepo interface {
 	CreateMovie(ctx context.Context, movie *domain.Movie) error
-	GetMovieByID(ctx context.Context, movieID uuid.UUID) (*domain.Movie, error)
+	//	GetMovieByID(ctx context.Context, movieID uuid.UUID) (*domain.Movie, error)
 	GetMovies(ctx context.Context) ([]*domain.Movie, error)
 	GetMoviesBySnippet(ctx context.Context, snippet string) ([]*domain.Movie, error)
 	UpdateMovie(ctx context.Context, movie *domain.Movie) error
@@ -47,6 +48,14 @@ func (s *MovieService) DeleteMovie(ctx context.Context, movieID uuid.UUID) error
 		return fmt.Errorf("delete movie: %w", err)
 	}
 	return nil
+}
+
+func (s *MovieService) GetMovies(ctx context.Context) ([]*domain.Movie, error) {
+	movies, err := s.repo.GetMovies(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get movies: %w", err)
+	}
+	return movies, nil
 }
 
 func (s *MovieService) GetMoviesFilter(ctx context.Context, filter string) ([]*domain.Movie, error) {
