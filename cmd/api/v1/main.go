@@ -19,7 +19,7 @@ import (
 	_ "cinema_service/docs"
 
 	"github.com/joho/godotenv"
-	httpSwagger "github.com/swaggo/http-swagger"
+	"github.com/swaggo/http-swagger"
 )
 
 // @title Cinema Service API Documentation
