@@ -3,9 +3,11 @@ package repository
 import (
 	"cinema_service/internal/domain"
 	"context"
+	"fmt"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"time"
 )
 
 type StorageUser struct {
@@ -26,8 +28,9 @@ func (s *StorageUser) GetUser(ctx context.Context, login string, password string
 	}
 	if err = s.db.QueryRow(
 		ctx,
-		`SELECT id, login, password, role, created_at FROM "users" u WHERE u.login = $1 AND u.password = $2`,
-	).Scan(login, pass); err != nil {
+		`SELECT id, login, password, role, created_at FROM "users" u WHERE u.login = $1 AND u.password = $2`, login, pass,
+	).Scan(&user.ID, &user.Login, &user.Password, &user.Role, &user.CreatedAt); err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 

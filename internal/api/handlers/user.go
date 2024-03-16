@@ -67,6 +67,6 @@ func (s *UserHandler) signIn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) RegisterUser(mux *http.ServeMux) *http.ServeMux {
-	mux.HandleFunc("POST /api/v1/signIn/", h.signIn)
+	mux.HandleFunc("POST /api/v1/signIn", h.signIn)
 	return mux
 }
