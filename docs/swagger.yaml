@@ -101,6 +101,8 @@ paths:
           description: Failed to delete actor
           schema:
             type: string
+      security:
+      - jwt: []
       summary: Delete an actor
       tags:
       - Actors
@@ -119,6 +121,8 @@ paths:
           description: Failed to get actors
           schema:
             type: string
+      security:
+      - jwt: []
       summary: Get Actors
       tags:
       - Actors
@@ -148,6 +152,8 @@ paths:
           description: Failed to create actor
           schema:
             type: string
+      security:
+      - jwt: []
       summary: Create Actor
       tags:
       - Actors
@@ -182,6 +188,8 @@ paths:
           description: Failed to update actor
           schema:
             type: string
+      security:
+      - jwt: []
       summary: Update actor information
       tags:
       - Actors
@@ -205,6 +213,8 @@ paths:
           description: Failed to delete movie
           schema:
             type: string
+      security:
+      - jwt: []
       summary: Delete Movie
       tags:
       - Movies
@@ -227,6 +237,8 @@ paths:
           description: Failed to get movies
           schema:
             type: string
+      security:
+      - jwt: []
       summary: Get Movies by Filter
       tags:
       - Movies
@@ -252,6 +264,8 @@ paths:
           description: Failed to create movie
           schema:
             type: string
+      security:
+      - jwt: []
       tags:
       - Movies
     put:
@@ -283,6 +297,8 @@ paths:
           description: Failed to update movie
           schema:
             type: string
+      security:
+      - jwt: []
       tags:
       - Movies
   /movies/snippet:
@@ -305,6 +321,8 @@ paths:
           description: Failed to get movies
           schema:
             type: string
+      security:
+      - jwt: []
       summary: Get Movies by Snippet
       tags:
       - Movies
@@ -338,4 +356,11 @@ paths:
       summary: Sign In
       tags:
       - Authentication
+security:
+- jwt: []
+securityDefinitions:
+  apiKey:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

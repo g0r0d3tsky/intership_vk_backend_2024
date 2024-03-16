@@ -30,6 +30,7 @@ func NewMovieHandler(service MovieService) *MovieHandler {
 // @Description Creates a new movie
 // @Tags Movies
 // @Accept json
+// @Security jwt
 // @Param movie body models.Movie true "Movie object"
 // @Success 201 "Movie created successfully"
 // @Failure 400 {string} string "Invalid request payload"
@@ -62,6 +63,7 @@ func (h *MovieHandler) CreateMovieHandler(w http.ResponseWriter, r *http.Request
 // @Description Updates an existing movie
 // @Tags Movies
 // @Accept json
+// @Security jwt
 // @Param movie_id query string true "Movie ID"
 // @Param movie body models.Movie true "Movie object"
 // @Success 200 {string}  string "Movie updated successfully"
@@ -101,6 +103,7 @@ func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request
 // @Summary Delete Movie
 // @Description Deletes a movie
 // @Tags Movies
+// @Security jwt
 // @Param movie_id query string true "Movie ID"
 // @Success 200 "Movie deleted successfully"
 // @Failure 400 {string} string "Invalid movie ID"
@@ -127,6 +130,7 @@ func (h *MovieHandler) DeleteMovieHandler(w http.ResponseWriter, r *http.Request
 // @Summary Get Movies by Filter
 // @Description Retrieves movies based on a filter.
 // @Tags Movies
+// @Security jwt
 // @Param filter query string true "Filter"
 // @Success 200 {array} models.Movie
 // @Failure 500 {string} 500 "Failed to encode movies"
@@ -152,6 +156,7 @@ func (h *MovieHandler) GetMoviesFilterHandler(w http.ResponseWriter, r *http.Req
 // @Summary Get Movies by Snippet
 // @Description Retrieves movies based on a snippet
 // @Tags Movies
+// @Security jwt
 // @Param snippet query string true "Snippet"
 // @Success 200 {array} models.Movie
 // @Failure 500 {string} 500 "Failed to encode movies" 

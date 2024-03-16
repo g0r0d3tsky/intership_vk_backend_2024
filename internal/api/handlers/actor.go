@@ -33,6 +33,7 @@ func NewActorHandler(service ActorService) *ActorHandler {
 // @Tags Actors
 // @Accept json
 // @Produce json
+// @Security jwt
 // @Param actor body models.Actor true "Actor object"
 // @Success 201 {string} string "Actor created successfully"
 // @Failure 400 {string} string "Invalid request payload"
@@ -65,6 +66,7 @@ func (h *ActorHandler) CreateActorHandler(w http.ResponseWriter, r *http.Request
 // @Tags Actors
 // @Accept json
 // @Produce json
+// @Security jwt
 // @Param id query string true "Actor ID"
 // @Param actor body models.Actor true "Updated actor information"
 // @Success 200 {string} string "OK"
@@ -104,6 +106,7 @@ func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request
 // @Summary Delete an actor
 // @Description Deletes an actor based on the provided actor ID.
 // @Tags Actors
+// @Security jwt
 // @Param id query string true "Actor ID"
 // @Success 200 {string} string "OK"
 // @Failure 400 {string} string "Invalid actor ID"
@@ -132,6 +135,7 @@ func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request
 // @Tags Actors
 // @Accept json
 // @Produce json
+// @Security jwt
 // @Success 200 {object} models.ActorMovies "Actors retrieved successfully"
 // @Failure 500 {string} string "Failed to get actors"
 // @Router /actors [get]

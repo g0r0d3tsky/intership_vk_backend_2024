@@ -17,6 +17,11 @@ const docTemplate = `{
     "paths": {
         "/actors": {
             "get": {
+                "security": [
+                    {
+                        "jwt": []
+                    }
+                ],
                 "description": "Retrieves a list of actors",
                 "consumes": [
                     "application/json"
@@ -44,6 +49,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "jwt": []
+                    }
+                ],
                 "description": "Updates actor information based on the input data.",
                 "consumes": [
                     "application/json"
@@ -95,6 +105,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "jwt": []
+                    }
+                ],
                 "description": "Creates a new actor",
                 "consumes": [
                     "application/json"
@@ -139,6 +154,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "jwt": []
+                    }
+                ],
                 "description": "Deletes an actor based on the provided actor ID.",
                 "tags": [
                     "Actors"
@@ -177,6 +197,11 @@ const docTemplate = `{
         },
         "/movies": {
             "get": {
+                "security": [
+                    {
+                        "jwt": []
+                    }
+                ],
                 "description": "Retrieves movies based on a filter.",
                 "tags": [
                     "Movies"
@@ -210,6 +235,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "jwt": []
+                    }
+                ],
                 "description": "Updates an existing movie",
                 "consumes": [
                     "application/json"
@@ -257,6 +287,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "jwt": []
+                    }
+                ],
                 "description": "Creates a new movie",
                 "consumes": [
                     "application/json"
@@ -294,6 +329,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "jwt": []
+                    }
+                ],
                 "description": "Deletes a movie",
                 "tags": [
                     "Movies"
@@ -329,6 +369,11 @@ const docTemplate = `{
         },
         "/movies/snippet": {
             "get": {
+                "security": [
+                    {
+                        "jwt": []
+                    }
+                ],
                 "description": "Retrieves movies based on a snippet",
                 "tags": [
                     "Movies"
@@ -521,7 +566,19 @@ const docTemplate = `{
                 }
             }
         }
-    }
+    },
+    "securityDefinitions": {
+        "apiKey": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    },
+    "security": [
+        {
+            "jwt": []
+        }
+    ]
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it

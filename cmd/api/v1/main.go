@@ -3,7 +3,7 @@ package main
 import (
 	"cinema_service/config"
 	"cinema_service/internal/api/handlers"
-	//"cinema_service/internal/api/middleware"
+	"cinema_service/internal/api/middleware"
 	"cinema_service/internal/repository"
 	"cinema_service/internal/usecase"
 	"context"
@@ -17,8 +17,9 @@ import (
 	"time"
 
 	_ "cinema_service/docs"
+
 	"github.com/joho/godotenv"
-	"github.com/swaggo/http-swagger"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 // @title Cinema Service API Documentation
@@ -26,6 +27,12 @@ import (
 // @description This is the API documentation for the Cinema Service.
 // @host localhost:8080
 // @BasePath /api/v1/
+// @securityDefinitions.apiKey apiKey
+// @in header
+// @name Authorization
+// @securityDefinitions.jwt apiKey
+// @tokenUrl http://localhost:8080/api/v1/signIn
+// @security jwt
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -48,25 +55,25 @@ func main() {
 		}
 	}()
 
-	//storageActor := repository.NewStorageActor(dbPool)
-	//storageMovie := repository.NewStorageMovie(dbPool)
+	storageActor := repository.NewStorageActor(dbPool)
+	storageMovie := repository.NewStorageMovie(dbPool)
 	storageUser := repository.NewUserStorage(dbPool)
 
-	//serviceActor := usecase.NewActorsService(&storageActor)
-	//serviceMovie := usecase.NewMovieService(&storageMovie)
+	serviceActor := usecase.NewActorsService(&storageActor)
+	serviceMovie := usecase.NewMovieService(&storageMovie)
 	serviceUser := usecase.NewUserService(&storageUser)
 
-	//handlerActor := handlers.NewActorHandler(serviceActor)
-	//handlerMovie := handlers.NewMovieHandler(serviceMovie)
+	handlerActor := handlers.NewActorHandler(serviceActor)
+	handlerMovie := handlers.NewMovieHandler(serviceMovie)
 	handlerUser := handlers.NewUserHandler(serviceUser)
 
-	//middlewareUser := middleware.NewUserMiddleware(serviceUser)
+	middlewareUser := middleware.NewUserMiddleware(serviceUser)
 	//authentication := middlewareUser.Authenticate()
 
 	mux := http.NewServeMux()
 
-	//mux = handlerActor.RegisterActor(mux, middlewareUser.Authenticate, middlewareUser.RequireAdmin)
-	//mux = handlerMovie.RegisterMovie(mux, middlewareUser.Authenticate, middlewareUser.RequireAdmin)
+	mux = handlerActor.RegisterActor(mux, middlewareUser.Authenticate, middlewareUser.RequireAdmin)
+	mux = handlerMovie.RegisterMovie(mux, middlewareUser.Authenticate, middlewareUser.RequireAdmin)
 	mux = handlerUser.RegisterUser(mux)
 	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 	server := &http.Server{
