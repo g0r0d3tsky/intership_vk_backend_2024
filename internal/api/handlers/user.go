@@ -38,7 +38,7 @@ type signInResponse struct {
 // @Success 200 {object} signInResponse "Token response"
 // @Failure 400 {string} 400 "Unmarshalling"
 // @Failure 500 {string} 500 "Generating Token"
-// @Router /users [post]
+// @Router /signIn [post]
 func (s *UserHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	var input signInInput
 
@@ -67,6 +67,6 @@ func (s *UserHandler) signIn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) RegisterUser(mux *http.ServeMux) *http.ServeMux {
-	mux.HandleFunc("POST /api/v1/users/", h.signIn)
+	mux.HandleFunc("POST /api/v1/signIn/", h.signIn)
 	return mux
 }

@@ -308,7 +308,7 @@ paths:
       summary: Get Movies by Snippet
       tags:
       - Movies
-  /signin:
+  /signIn:
     post:
       consumes:
       - application/json

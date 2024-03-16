@@ -362,7 +362,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/signin": {
+        "/signIn": {
             "post": {
                 "description": "Authenticates a user and returns a token",
                 "consumes": [
