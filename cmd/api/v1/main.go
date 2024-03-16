@@ -16,9 +16,16 @@ import (
 	"syscall"
 	"time"
 
+	_ "cinema_service/docs"
 	"github.com/joho/godotenv"
+	"github.com/swaggo/http-swagger"
 )
 
+// @title Cinema Service API Documentation
+// @version 1.0
+// @description This is the API documentation for the Cinema Service.
+// @host localhost:8080
+// @BasePath /api/v1/
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -61,6 +68,7 @@ func main() {
 	mux = handlerActor.RegisterActor(mux, middlewareUser.Authenticate, middlewareUser.RequireAdmin)
 	mux = handlerMovie.RegisterMovie(mux, middlewareUser.Authenticate, middlewareUser.RequireAdmin)
 	mux = handlerUser.RegisterUser(mux)
+	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 	server := &http.Server{
 		Addr:    net.JoinHostPort(c.Host, c.Port),
 		Handler: mux,

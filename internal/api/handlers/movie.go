@@ -30,10 +30,10 @@ func NewMovieHandler(service MovieService) *MovieHandler {
 // @Description Creates a new movie
 // @Tags Movies
 // @Accept json
-// @Param body models.Movie true "Movie object"
+// @Param movie body models.Movie true "Movie object"
 // @Success 201 "Movie created successfully"
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Failed to create movie"
 // @Router /movies [post]
 func (h *MovieHandler) CreateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	var input models.Movie
@@ -63,10 +63,10 @@ func (h *MovieHandler) CreateMovieHandler(w http.ResponseWriter, r *http.Request
 // @Tags Movies
 // @Accept json
 // @Param movie_id query string true "Movie ID"
-// @Param body models.Movie true "Movie object"
-// @Success 200 "Movie updated successfully"
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Param movie body models.Movie true "Movie object"
+// @Success 200 {string}  string "Movie updated successfully"
+// @Failure 400 {string} string "Invalid movie ID" or "Invalid request payload"
+// @Failure 500 {string} string "Failed to update movie"
 // @Router /movies [put]
 func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	movieIDStr := r.URL.Query().Get("id")
@@ -97,13 +97,14 @@ func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusOK)
 }
 
+// DeleteMovieHandler
 // @Summary Delete Movie
 // @Description Deletes a movie
 // @Tags Movies
 // @Param movie_id query string true "Movie ID"
 // @Success 200 "Movie deleted successfully"
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Failure 400 {string} string "Invalid movie ID"
+// @Failure 500 {string} string "Failed to delete movie"
 // @Router /movies [delete]
 func (h *MovieHandler) DeleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 	movieIDStr := r.URL.Query().Get("id")
@@ -122,12 +123,14 @@ func (h *MovieHandler) DeleteMovieHandler(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusOK)
 }
 
-// GetMoviesFilterHandler @Summary Get Movies by Filter
-// @Description Retrieves movies based on a filter
+// GetMoviesFilterHandler retrieves movies based on a filter.
+// @Summary Get Movies by Filter
+// @Description Retrieves movies based on a filter.
 // @Tags Movies
 // @Param filter query string true "Filter"
 // @Success 200 {array} models.Movie
-// @Failure 500 {object} ErrorResponse
+// @Failure 500 {string} 500 "Failed to encode movies"
+// @Failure 500 {string} 500 "Failed to get movies"
 // @Router /movies [get]
 func (h *MovieHandler) GetMoviesFilterHandler(w http.ResponseWriter, r *http.Request) {
 	filter := r.URL.Query().Get("filter")
@@ -140,16 +143,19 @@ func (h *MovieHandler) GetMoviesFilterHandler(w http.ResponseWriter, r *http.Req
 
 	err = json.NewEncoder(w).Encode(movies)
 	if err != nil {
+		http.Error(w, "Failed to encode movies", http.StatusInternalServerError)
 		return
 	}
 }
 
-// GetMoviesBySnippetHandler @Summary Get Movies by Snippet
+// GetMoviesBySnippetHandler
+// @Summary Get Movies by Snippet
 // @Description Retrieves movies based on a snippet
 // @Tags Movies
 // @Param snippet query string true "Snippet"
 // @Success 200 {array} models.Movie
-// @Failure 500 {object} ErrorResponse
+// @Failure 500 {string} 500 "Failed to encode movies" 
+// @Failure 500 {string} 500 "Failed to get movies"
 // @Router /movies/snippet [get]
 func (h *MovieHandler) GetMoviesBySnippetHandler(w http.ResponseWriter, r *http.Request) {
 	snippet := r.URL.Query().Get("snippet")
@@ -162,6 +168,7 @@ func (h *MovieHandler) GetMoviesBySnippetHandler(w http.ResponseWriter, r *http.
 
 	err = json.NewEncoder(w).Encode(movies)
 	if err != nil {
+		http.Error(w, "Failed to encode movies", http.StatusInternalServerError)
 		return
 	}
 }

@@ -1,0 +1,341 @@
+basePath: /api/v1/
+definitions:
+  domain.Actor:
+    properties:
+      birthdate:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      sex:
+        type: string
+      surname:
+        type: string
+    type: object
+  domain.Movie:
+    properties:
+      date:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      rating:
+        type: integer
+      title:
+        type: string
+    type: object
+  handlers.signInInput:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  handlers.signInResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  models.Actor:
+    properties:
+      birthdate:
+        type: string
+      name:
+        type: string
+      sex:
+        type: string
+      surname:
+        type: string
+    type: object
+  models.ActorMovies:
+    properties:
+      actor:
+        $ref: '#/definitions/domain.Actor'
+      movies:
+        items:
+          $ref: '#/definitions/domain.Movie'
+        type: array
+    type: object
+  models.Movie:
+    properties:
+      date:
+        type: string
+      description:
+        type: string
+      rating:
+        type: integer
+      title:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is the API documentation for the Cinema Service.
+  title: Cinema Service API Documentation
+  version: "1.0"
+paths:
+  /actors:
+    delete:
+      description: Deletes an actor based on the provided actor ID.
+      parameters:
+      - description: Actor ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Invalid actor ID
+          schema:
+            type: string
+        "500":
+          description: Failed to delete actor
+          schema:
+            type: string
+      summary: Delete an actor
+      tags:
+      - Actors
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of actors
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Actors retrieved successfully
+          schema:
+            $ref: '#/definitions/models.ActorMovies'
+        "500":
+          description: Failed to get actors
+          schema:
+            type: string
+      summary: Get Actors
+      tags:
+      - Actors
+    post:
+      consumes:
+      - application/json
+      description: Creates a new actor
+      parameters:
+      - description: Actor object
+        in: body
+        name: actor
+        required: true
+        schema:
+          $ref: '#/definitions/models.Actor'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Actor created successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Failed to create actor
+          schema:
+            type: string
+      summary: Create Actor
+      tags:
+      - Actors
+    put:
+      consumes:
+      - application/json
+      description: Updates actor information based on the input data.
+      parameters:
+      - description: Actor ID
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Updated actor information
+        in: body
+        name: actor
+        required: true
+        schema:
+          $ref: '#/definitions/models.Actor'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Invalid actor ID" or "Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Failed to update actor
+          schema:
+            type: string
+      summary: Update actor information
+      tags:
+      - Actors
+  /movies:
+    delete:
+      description: Deletes a movie
+      parameters:
+      - description: Movie ID
+        in: query
+        name: movie_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Movie deleted successfully
+        "400":
+          description: Invalid movie ID
+          schema:
+            type: string
+        "500":
+          description: Failed to delete movie
+          schema:
+            type: string
+      summary: Delete Movie
+      tags:
+      - Movies
+    get:
+      description: Retrieves movies based on a filter.
+      parameters:
+      - description: Filter
+        in: query
+        name: filter
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Movie'
+            type: array
+        "500":
+          description: Failed to get movies
+          schema:
+            type: string
+      summary: Get Movies by Filter
+      tags:
+      - Movies
+    post:
+      consumes:
+      - application/json
+      description: Creates a new movie
+      parameters:
+      - description: Movie object
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Movie'
+      responses:
+        "201":
+          description: Movie created successfully
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Failed to create movie
+          schema:
+            type: string
+      tags:
+      - Movies
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing movie
+      parameters:
+      - description: Movie ID
+        in: query
+        name: movie_id
+        required: true
+        type: string
+      - description: Movie object
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Movie'
+      responses:
+        "200":
+          description: Movie updated successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid movie ID" or "Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Failed to update movie
+          schema:
+            type: string
+      tags:
+      - Movies
+  /movies/snippet:
+    get:
+      description: Retrieves movies based on a snippet
+      parameters:
+      - description: Snippet
+        in: query
+        name: snippet
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Movie'
+            type: array
+        "500":
+          description: Failed to get movies
+          schema:
+            type: string
+      summary: Get Movies by Snippet
+      tags:
+      - Movies
+  /signin:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns a token
+      parameters:
+      - description: Sign In Input
+        in: body
+        name: sigIn
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.signInInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token response
+          schema:
+            $ref: '#/definitions/handlers.signInResponse'
+        "400":
+          description: Unmarshalling
+          schema:
+            type: string
+        "500":
+          description: Generating Token
+          schema:
+            type: string
+      summary: Sign In
+      tags:
+      - Authentication
+swagger: "2.0"

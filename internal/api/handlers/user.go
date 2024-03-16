@@ -25,16 +25,20 @@ type signInInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type signInResponse struct {
+	Token string `json:"token"`
+}
+
 // @Summary Sign In
 // @Description Authenticates a user and returns a token
 // @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param body signInInput true "Sign In Input"
-// @Success 200 {object} map[string]interface{} "Token"
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /signin [post]
+// @Param sigIn body signInInput true "Sign In Input"
+// @Success 200 {object} signInResponse "Token response"
+// @Failure 400 {string} 400 "Unmarshalling"
+// @Failure 500 {string} 500 "Generating Token"
+// @Router /users [post]
 func (s *UserHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	var input signInInput
 
@@ -50,8 +54,8 @@ func (s *UserHandler) signIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := map[string]interface{}{
-		"token": token,
+	response := signInResponse{
+		Token: token,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -61,6 +65,7 @@ func (s *UserHandler) signIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
 func (h *UserHandler) RegisterUser(mux *http.ServeMux) *http.ServeMux {
 	mux.HandleFunc("POST /api/v1/users/", h.signIn)
 	return mux

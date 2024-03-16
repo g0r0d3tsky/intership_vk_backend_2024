@@ -33,10 +33,10 @@ func NewActorHandler(service ActorService) *ActorHandler {
 // @Tags Actors
 // @Accept json
 // @Produce json
-// @Param body models.Actor true "Actor object"
+// @Param actor body models.Actor true "Actor object"
 // @Success 201 {string} string "Actor created successfully"
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Failed to create actor"
 // @Router /actors [post]
 func (h *ActorHandler) CreateActorHandler(w http.ResponseWriter, r *http.Request) {
 	var input models.Actor
@@ -59,17 +59,17 @@ func (h *ActorHandler) CreateActorHandler(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusCreated)
 }
 
-// UpdateActorHandler updates an existing actor.
-// @Summary Update Actor
-// @Description Updates an existing actor
+// UpdateActorHandler updates actor information.
+// @Summary Update actor information
+// @Description Updates actor information based on the input data.
 // @Tags Actors
 // @Accept json
 // @Produce json
-// @Param actor_id query string true "Actor ID"
-// @Param body  models.Actor true "Actor object"
-// @Success 200 {string} string "Actor updated successfully"
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Param id query string true "Actor ID"
+// @Param actor body models.Actor true "Updated actor information"
+// @Success 200 {string} string "OK"
+// @Failure 400 {string} string "Invalid actor ID" or "Invalid request payload"
+// @Failure 500 {string} string "Failed to update actor"
 // @Router /actors [put]
 func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request) {
 	actorIDStr := r.URL.Query().Get("id")
@@ -101,18 +101,16 @@ func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request
 }
 
 // DeleteActorHandler deletes an actor.
-// @Summary Delete Actor
-// @Description Deletes an actor
+// @Summary Delete an actor
+// @Description Deletes an actor based on the provided actor ID.
 // @Tags Actors
-// @Accept json
-// @Produce json
-// @Param actor_id query string true "Actor ID"
-// @Success 200 {string} string "Actor deleted successfully"
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Param id query string true "Actor ID"
+// @Success 200 {string} string "OK"
+// @Failure 400 {string} string "Invalid actor ID"
+// @Failure 500 {string} string "Failed to delete actor"
 // @Router /actors [delete]
 func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
-	actorIDStr := r.URL.Query().Get("actor_id")
+	actorIDStr := r.URL.Query().Get("id")
 	actorID, err := uuid.Parse(actorIDStr)
 	if err != nil {
 		http.Error(w, "Invalid actor ID", http.StatusBadRequest)
@@ -134,8 +132,8 @@ func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request
 // @Tags Actors
 // @Accept json
 // @Produce json
-// @Success 200 {object} map[*domain.Actor][]*domain.Movie "Actors retrieved successfully"
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} models.ActorMovies "Actors retrieved successfully"
+// @Failure 500 {string} string "Failed to get actors"
 // @Router /actors [get]
 func (h *ActorHandler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 	actors, err := h.service.GetActors(r.Context())
@@ -144,18 +142,28 @@ func (h *ActorHandler) GetActorsHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(actors)
+	actorMoviesList := make([]*models.ActorMovies, 0, len(actors))
+
+	for actor, movies := range actors {
+		actorMovies := &models.ActorMovies{
+			Actor:  actor,
+			Movies: movies,
+		}
+		actorMoviesList = append(actorMoviesList, actorMovies)
+	}
+
+	err = json.NewEncoder(w).Encode(actorMoviesList)
 	if err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 		return
 	}
 }
-
 // TODO: authorization
 func (h *ActorHandler) RegisterActor(mux *http.ServeMux,
 	authentication Middleware, authorization Middleware) *http.ServeMux {
 	mux.HandleFunc("GET /api/v1/actors/", authentication(h.GetActorsHandler))
 	mux.HandleFunc("POST /api/v1/actors/", authentication(authorization(h.CreateActorHandler)))
 	mux.HandleFunc("PUT /api/v1/actors/{id}", authentication(authorization(h.UpdateActorHandler)))
-	mux.HandleFunc("DELETE /api/v1/actors/{id}", authentication(authentication(h.DeleteActorHandler)))
+	mux.HandleFunc("DELETE /api/v1/actors/{id}", authentication(authorization(h.DeleteActorHandler)))
 	return mux
 }
