@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=actors.go -destination=mocks/actorsMock.go
+
 type ActorsRepo interface {
 	CreateActor(ctx context.Context, act *domain.Actor) error
 	UpdateActor(ctx context.Context, act *domain.Actor) error

@@ -26,10 +26,12 @@ type tokenClaims struct {
 	userClaims *UserInfo
 }
 
+//go:generate mockgen -source=user.go -destination=mocks/userMock.go
+
 type UserRepo interface {
 	GetUser(ctx context.Context, login string, password string) (*domain.User, error)
-	CreateUser(ctx context.Context, u *domain.User) error
-	DeleteUser(ctx context.Context, userID uuid.UUID) error
+	//CreateUser(ctx context.Context, u *domain.User) error
+	//DeleteUser(ctx context.Context, userID uuid.UUID) error
 }
 
 type UserService struct {
@@ -49,26 +51,26 @@ func (s *UserService) GetUser(ctx context.Context, login string, password string
 }
 
 // TODO: validation?
-func (s *UserService) CreateUser(ctx context.Context, u *domain.User) error {
-	err := s.repo.CreateUser(ctx, u)
-	if err != nil {
-		return fmt.Errorf("create user: %w", err)
-	}
+// func (s *UserService) CreateUser(ctx context.Context, u *domain.User) error {
+// 	err := s.repo.CreateUser(ctx, u)
+// 	if err != nil {
+// 		return fmt.Errorf("create user: %w", err)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func (s *UserService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
-	err := s.repo.DeleteUser(ctx, userID)
-	if err != nil {
-		return fmt.Errorf("delete user: %w", err)
-	}
+// func (s *UserService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
+// 	err := s.repo.DeleteUser(ctx, userID)
+// 	if err != nil {
+// 		return fmt.Errorf("delete user: %w", err)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (s *UserService) GenerateToken(ctx context.Context, login string, password string) (string, error) {
-	user, err := s.repo.GetUser(ctx, login, password)
+	user, err := s.GetUser(ctx, login, password)
 	if err != nil {
 		return "", fmt.Errorf("get user: %w", err)
 	}

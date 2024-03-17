@@ -9,6 +9,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=movie.go -destination=mocks/movieMock.go
+
 type MovieRepo interface {
 	CreateMovie(ctx context.Context, movie *domain.Movie) error
 	//	GetMovieByID(ctx context.Context, movieID uuid.UUID) (*domain.Movie, error)
