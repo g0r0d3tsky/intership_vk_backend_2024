@@ -10,6 +10,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=actor.go -destination=mocks/actorServiceMock.go
+
 type ActorService interface {
 	CreateActor(ctx context.Context, act *domain.Actor) error
 	UpdateActor(ctx context.Context, act *domain.Actor) error
@@ -35,17 +37,18 @@ func NewActorHandler(service ActorService) *ActorHandler {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param actor body models.Actor true "Actor object"
-// @Success 201 {string} string "Actor created successfully"
-// @Failure 400 {string} string "Invalid request payload"
-// @Failure 500 {string} string "Failed to create actor"
+// @Success 201 {object} statusResponse "Actor created successfully"
+// @Failure 400 {object} errorResponse "Invalid request payload"
+// @Failure 500 {object} errorResponse "Failed to create actor"
 // @Router /actors [post]
 func (h *ActorHandler) CreateActorHandler(w http.ResponseWriter, r *http.Request) {
 	var input models.Actor
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		newErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
+
 	actor := &domain.Actor{
 		Name:    input.Name,
 		Surname: input.Surname,
@@ -53,11 +56,13 @@ func (h *ActorHandler) CreateActorHandler(w http.ResponseWriter, r *http.Request
 	}
 	err = h.service.CreateActor(r.Context(), actor)
 	if err != nil {
-		http.Error(w, "Failed to create actor", http.StatusInternalServerError)
+		newErrorResponse(w, http.StatusInternalServerError, "Failed to create actor")
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	sendJSONResponse(w, http.StatusCreated, statusResponse{
+		Status: "Actor created successfully",
+	})
 }
 
 // UpdateActorHandler updates actor information.
@@ -69,28 +74,31 @@ func (h *ActorHandler) CreateActorHandler(w http.ResponseWriter, r *http.Request
 // @Security ApiKeyAuth
 // @Param id query string true "Actor ID"
 // @Param actor body models.Actor true "Updated actor information"
-// @Success 200 {string} string "OK"
-// @Failure 400 {string} string "Invalid actor ID" or "Invalid request payload"
-// @Failure 500 {string} string "Failed to update actor"
+// @Success 200 {object} statusResponse
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
 // @Router /actors [put]
 func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request) {
 	actorIDStr := r.URL.Query().Get("id")
 	if actorIDStr == "" {
-		http.Error(w, "Actor ID parameter is required", http.StatusBadRequest)
+		newErrorResponse(w, http.StatusBadRequest,"Actor ID parameter is required",
+		)
 		return
 	}
 
-	// Проверка валидности id
 	id, err := uuid.Parse(actorIDStr)
 	if err != nil {
-		http.Error(w, "Invalid actor ID", http.StatusBadRequest)
+		newErrorResponse(w, http.StatusBadRequest,
+		"Invalid actor ID",
+		)
 		return
 	}
 
 	var input models.Actor
 	err = json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		newErrorResponse(w, http.StatusBadRequest, "Invalid request payload",
+		)
 		return
 	}
 
@@ -103,11 +111,14 @@ func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request
 
 	err = h.service.UpdateActor(r.Context(), actor)
 	if err != nil {
-		http.Error(w, "Failed to update actor", http.StatusInternalServerError)
+		newErrorResponse(w, http.StatusInternalServerError,  "Failed to update actor",
+		)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	sendJSONResponse(w, http.StatusOK, statusResponse{
+		Status: "Actor updated successfully",
+	})
 }
 
 // DeleteActorHandler deletes an actor.
@@ -116,31 +127,35 @@ func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request
 // @Tags Actors
 // @Security ApiKeyAuth
 // @Param id query string true "Actor ID"
-// @Success 200 {string} string "OK"
-// @Failure 400 {string} string "Invalid actor ID"
-// @Failure 500 {string} string "Failed to delete actor"
+// @Success 200 {object} statusResponse
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
 // @Router /actors [delete]
 func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 	actorIDStr := r.URL.Query().Get("id")
 	if actorIDStr == "" {
-		http.Error(w, "Actor ID parameter is required", http.StatusBadRequest)
+		newErrorResponse(w, http.StatusBadRequest,  "Actor ID parameter is required",
+		)
 		return
 	}
 
-	// Проверка валидности id
 	actorID, err := uuid.Parse(actorIDStr)
 	if err != nil {
-		http.Error(w, "Invalid actor ID", http.StatusBadRequest)
+		newErrorResponse(w, http.StatusBadRequest,  "Invalid actor ID",
+		)
 		return
 	}
 
 	err = h.service.DeleteActor(r.Context(), actorID)
 	if err != nil {
-		http.Error(w, "Failed to delete actor", http.StatusInternalServerError)
+		newErrorResponse(w, http.StatusInternalServerError,  "Failed to delete actor",
+		)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	sendJSONResponse(w, http.StatusOK, statusResponse{
+		Status: "Actor deleted successfully",
+	})
 }
 
 // GetActorsHandler retrieves a list of actors.
@@ -151,12 +166,13 @@ func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request
 // @Param id path int true "Actor ID"
 // @Security ApiKeyAuth
 // @Success 200 {object} models.ActorMovies "Actors retrieved successfully"
-// @Failure 500 {string} string "Failed to get actors"
+// @Failure 500 {object} errorResponse
 // @Router /actors [get]
 func (h *ActorHandler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 	actors, err := h.service.GetActors(r.Context())
 	if err != nil {
-		http.Error(w, "Failed to get actors", http.StatusInternalServerError)
+		newErrorResponse(w, http.StatusInternalServerError, "Failed to get actors",
+		)
 		return
 	}
 
@@ -170,11 +186,7 @@ func (h *ActorHandler) GetActorsHandler(w http.ResponseWriter, r *http.Request) 
 		actorMoviesList = append(actorMoviesList, actorMovies)
 	}
 
-	err = json.NewEncoder(w).Encode(actorMoviesList)
-	if err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		return
-	}
+	sendJSONResponse(w, http.StatusOK, actorMoviesList)
 }
 
 // TODO: authorization
@@ -186,4 +198,5 @@ func (h *ActorHandler) RegisterActor(mux *http.ServeMux,
 	mux.HandleFunc("DELETE /api/v1/actors", authentication(authorization(h.DeleteActorHandler)))
 	return mux
 }
+
 //TODO: пофикси удаление из таблиц

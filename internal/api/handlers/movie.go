@@ -10,6 +10,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=movie.go -destination=mocks/movieServiceMock.go
+
 type MovieService interface {
 	CreateMovie(ctx context.Context, movie *domain.Movie) error
 	UpdateMovie(ctx context.Context, movie *domain.Movie) error
@@ -26,21 +28,22 @@ func NewMovieHandler(service MovieService) *MovieHandler {
 	return &MovieHandler{service: service}
 }
 
-// CreateMovieHandler @Summary Create Movie
+// CreateMovieHandler creates a new movie.
+// @Summary Create Movie
 // @Description Creates a new movie
 // @Tags Movies
 // @Accept json
 // @Security ApiKeyAuth
 // @Param movie body models.Movie true "Movie object"
-// @Success 201 "Movie created successfully"
-// @Failure 400 {string} string "Invalid request payload"
-// @Failure 500 {string} string "Failed to create movie"
+// @Success 201 {object} statusResponse
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
 // @Router /movies [post]
 func (h *MovieHandler) CreateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	var input models.Movie
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		newErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
@@ -52,11 +55,13 @@ func (h *MovieHandler) CreateMovieHandler(w http.ResponseWriter, r *http.Request
 	}
 	err = h.service.CreateMovie(r.Context(), movie)
 	if err != nil {
-		http.Error(w, "Failed to create movie", http.StatusInternalServerError)
+		newErrorResponse(w, http.StatusInternalServerError, "Failed to create movie")
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	sendJSONResponse(w, http.StatusCreated, statusResponse{
+		Status: "Movie created successfully",
+	})
 }
 
 // UpdateMovieHandler @Summary Update Movie
@@ -66,28 +71,27 @@ func (h *MovieHandler) CreateMovieHandler(w http.ResponseWriter, r *http.Request
 // @Security ApiKeyAuth
 // @Param id query string true "Movie ID"
 // @Param movie body models.Movie true "Movie object"
-// @Success 200 {string} string "Movie updated successfully"
-// @Failure 400 {string} string "Invalid movie ID" or "Invalid request payload"
-// @Failure 500 {string} string "Failed to update movie"
+// @Success 200 {object} statusResponse
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
 // @Router /movies [put]
 func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	movieIDStr := r.URL.Query().Get("id")
 	if movieIDStr == "" {
-		http.Error(w, "Movie ID parameter is required", http.StatusBadRequest)
+		newErrorResponse(w, http.StatusBadRequest, "Movie ID parameter is required")
 		return
 	}
 
-	// Проверка валидности movie_id
 	id, err := uuid.Parse(movieIDStr)
 	if err != nil {
-		http.Error(w, "Invalid movie ID", http.StatusBadRequest)
+		newErrorResponse(w, http.StatusBadRequest, "Invalid movie ID")
 		return
 	}
 
 	var input models.Movie
 	err = json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		newErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
@@ -101,11 +105,15 @@ func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request
 
 	err = h.service.UpdateMovie(r.Context(), movie)
 	if err != nil {
-		http.Error(w, "Failed to update movie", http.StatusInternalServerError)
+		sendJSONResponse(w, http.StatusInternalServerError, errorResponse{
+			Message: "Failed to update movie",
+		})
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	sendJSONResponse(w, http.StatusOK, statusResponse{
+		Status: "Movie updated successfully",
+	})
 }
 
 // DeleteMovieHandler
@@ -114,31 +122,32 @@ func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request
 // @Tags Movies
 // @Security ApiKeyAuth
 // @Param id query string true "Movie ID"
-// @Success 200 "Movie deleted successfully"
-// @Failure 400 {string} string "Invalid movie ID"
-// @Failure 500 {string} string "Failed to delete movie"
+// @Success 200 {object} statusResponse
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
 // @Router /movies [delete]
 func (h *MovieHandler) DeleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 	movieIDStr := r.URL.Query().Get("id")
 	if movieIDStr == "" {
-		http.Error(w, "Movie ID parameter is required", http.StatusBadRequest)
+		newErrorResponse(w, http.StatusBadRequest, "Movie ID parameter is required")
 		return
 	}
 
-	// Проверка валидности movie_id
 	movieID, err := uuid.Parse(movieIDStr)
 	if err != nil {
-		http.Error(w, "Invalid movie ID", http.StatusBadRequest)
+		newErrorResponse(w, http.StatusBadRequest, "Invalid movie ID")
 		return
 	}
 
 	err = h.service.DeleteMovie(r.Context(), movieID)
 	if err != nil {
-		http.Error(w, "Failed to delete movie", http.StatusInternalServerError)
+		newErrorResponse(w, http.StatusInternalServerError, "Failed to delete movie")
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	sendJSONResponse(w, http.StatusOK, statusResponse{
+		Status: "Movie deleted successfully",
+	})
 }
 
 // GetMoviesFilterHandler retrieves movies based on a filter.
@@ -148,57 +157,55 @@ func (h *MovieHandler) DeleteMovieHandler(w http.ResponseWriter, r *http.Request
 // @Security ApiKeyAuth
 // @Param filter query string true "Filter"
 // @Success 200 {array} models.Movie
-// @Failure 500 {string} 500 "Failed to encode movies"
-// @Failure 500 {string} 500 "Failed to get movies"
+// @Failure 500 {object} errorResponse
+// @Failure 500 {object} errorResponse
 // @Router /movies/filter [get]
 func (h *MovieHandler) GetMoviesFilterHandler(w http.ResponseWriter, r *http.Request) {
 	filter := r.URL.Query().Get("filter")
 
 	if filter == "" {
-		http.Error(w, "Filter parameter is required", http.StatusNotFound)
+		newErrorResponse(w, http.StatusBadRequest, "Filter parameter is required")
 		return
 	}
 
 	movies, err := h.service.GetMoviesFilter(r.Context(), filter)
 	if err != nil {
-		http.Error(w, "Failed to get movies", http.StatusInternalServerError)
+		newErrorResponse(w, http.StatusInternalServerError, "Failed to get movies")
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(movies)
-	if err != nil {
-		http.Error(w, "Failed to encode movies", http.StatusInternalServerError)
-		return
-	}
+	sendJSONResponse(w, http.StatusInternalServerError, movies)
+
 }
 
-// GetMoviesBySnippetHandler
+// GetMoviesBySnippetHandler retrieves movies based on a snippet.
 // @Summary Get Movies by Snippet
 // @Description Retrieves movies based on a snippet
 // @Tags Movies
 // @Security ApiKeyAuth
 // @Param snippet query string true "Snippet"
 // @Success 200 {array} models.Movie
-// @Failure 500 {string} string "Failed to encode movies"
-// @Failure 500 {string} string "Failed to get movies"
+// @Failure 500 {object} errorResponse
+// @Failure 500 {object} errorResponse
 // @Router /movies/snippet [get]
 func (h *MovieHandler) GetMoviesBySnippetHandler(w http.ResponseWriter, r *http.Request) {
 	snippet := r.URL.Query().Get("snippet")
 
 	if snippet == "" {
-		http.Error(w, "Snippet parameter is required", http.StatusNotFound)
+		newErrorResponse(w, http.StatusBadRequest, "Snippet parameter is required")
 		return
 	}
 
 	movies, err := h.service.GetMoviesBySnippet(r.Context(), snippet)
 	if err != nil {
-		http.Error(w, "Failed to get movies", http.StatusInternalServerError)
+		newErrorResponse(w, http.StatusInternalServerError, "Failed to get movies")
 		return
 	}
 
 	err = json.NewEncoder(w).Encode(movies)
 	if err != nil {
-		http.Error(w, "Failed to encode movies", http.StatusInternalServerError)
+		newErrorResponse(w, http.StatusInternalServerError,  "Failed to encode movies",
+		)
 		return
 	}
 }

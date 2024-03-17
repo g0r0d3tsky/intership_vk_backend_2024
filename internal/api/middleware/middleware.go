@@ -4,8 +4,11 @@ import (
 	"cinema_service/internal/domain"
 	"cinema_service/internal/usecase"
 	"context"
+	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -41,7 +44,7 @@ func (m *UserMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		if len(headerParts[1]) == 0 {
+		if len(headerParts[1]) == 0 || len(strings.Split(headerParts[1], "")) == 0 {
 			http.Error(w, "token is empty", http.StatusUnauthorized)
 			return
 		}
@@ -71,4 +74,55 @@ func (m *UserMiddleware) RequireAdmin(next http.HandlerFunc) http.HandlerFunc {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+func (m *UserMiddleware) LoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		startTime := time.Now()
+
+		mw := NewResponseWriter(w)
+		next.ServeHTTP(mw, r)
+		statusCode := mw.StatusCode()
+		responseSize := mw.Size()
+
+		endTime := time.Now()
+		elapsedTime := endTime.Sub(startTime)
+
+		slog.Info(
+			"Method: %s, Path: %s, Status: %s, Size: %d bytes, Time: %s",
+			r.Method,
+			r.URL.Path,
+			strconv.Itoa(statusCode),
+			responseSize,
+			elapsedTime,
+		)
+	})
+}
+
+type ResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+	size       int
+}
+
+func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
+	return &ResponseWriter{w, http.StatusOK, 0}
+}
+
+func (rw *ResponseWriter) WriteHeader(code int) {
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
+}
+
+func (rw *ResponseWriter) Write(data []byte) (int, error) {
+	size, err := rw.ResponseWriter.Write(data)
+	rw.size += size
+	return size, err
+}
+
+func (rw *ResponseWriter) StatusCode() int {
+	return rw.statusCode
+}
+
+func (rw *ResponseWriter) Size() int {
+	return rw.size
 }

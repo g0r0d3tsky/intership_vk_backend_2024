@@ -26,6 +26,11 @@ definitions:
       title:
         type: string
     type: object
+  handlers.errorResponse:
+    properties:
+      error:
+        type: string
+    type: object
   handlers.signInInput:
     properties:
       login:
@@ -39,6 +44,11 @@ definitions:
   handlers.signInResponse:
     properties:
       token:
+        type: string
+    type: object
+  handlers.statusResponse:
+    properties:
+      status:
         type: string
     type: object
   models.Actor:
@@ -92,15 +102,15 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/handlers.statusResponse'
         "400":
-          description: Invalid actor ID
+          description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
         "500":
-          description: Failed to delete actor
+          description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
       security:
       - ApiKeyAuth: []
       summary: Delete an actor
@@ -122,9 +132,9 @@ paths:
           schema:
             $ref: '#/definitions/models.ActorMovies'
         "500":
-          description: Failed to get actors
+          description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
       security:
       - ApiKeyAuth: []
       summary: Get Actors
@@ -147,15 +157,15 @@ paths:
         "201":
           description: Actor created successfully
           schema:
-            type: string
+            $ref: '#/definitions/handlers.statusResponse'
         "400":
           description: Invalid request payload
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
         "500":
           description: Failed to create actor
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
       security:
       - ApiKeyAuth: []
       summary: Create Actor
@@ -183,15 +193,15 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/handlers.statusResponse'
         "400":
-          description: Invalid actor ID" or "Invalid request payload
+          description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
         "500":
-          description: Failed to update actor
+          description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
       security:
       - ApiKeyAuth: []
       summary: Update actor information
@@ -208,15 +218,17 @@ paths:
         type: string
       responses:
         "200":
-          description: Movie deleted successfully
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.statusResponse'
         "400":
-          description: Invalid movie ID
+          description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
         "500":
-          description: Failed to delete movie
+          description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
       security:
       - ApiKeyAuth: []
       summary: Delete Movie
@@ -235,17 +247,20 @@ paths:
           $ref: '#/definitions/models.Movie'
       responses:
         "201":
-          description: Movie created successfully
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.statusResponse'
         "400":
-          description: Invalid request payload
+          description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
         "500":
-          description: Failed to create movie
+          description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
       security:
       - ApiKeyAuth: []
+      summary: Create Movie
       tags:
       - Movies
     put:
@@ -266,17 +281,17 @@ paths:
           $ref: '#/definitions/models.Movie'
       responses:
         "200":
-          description: Movie updated successfully
+          description: OK
           schema:
-            type: string
+            $ref: '#/definitions/handlers.statusResponse'
         "400":
-          description: Invalid movie ID" or "Invalid request payload
+          description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
         "500":
-          description: Failed to update movie
+          description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
       security:
       - ApiKeyAuth: []
       tags:
@@ -298,9 +313,9 @@ paths:
               $ref: '#/definitions/models.Movie'
             type: array
         "500":
-          description: Failed to get movies
+          description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
       security:
       - ApiKeyAuth: []
       summary: Get Movies by Filter
@@ -323,9 +338,9 @@ paths:
               $ref: '#/definitions/models.Movie'
             type: array
         "500":
-          description: Failed to get movies
+          description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
       security:
       - ApiKeyAuth: []
       summary: Get Movies by Snippet
@@ -351,13 +366,13 @@ paths:
           schema:
             $ref: '#/definitions/handlers.signInResponse'
         "400":
-          description: Unmarshalling
+          description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
         "500":
-          description: Generating Token
+          description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/handlers.errorResponse'
       summary: Sign In
       tags:
       - Authentication

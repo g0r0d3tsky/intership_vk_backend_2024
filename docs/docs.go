@@ -47,9 +47,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Failed to get actors",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     }
                 }
@@ -93,19 +93,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.statusResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid actor ID\" or \"Invalid request payload",
+                        "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     },
                     "500": {
-                        "description": "Failed to update actor",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     }
                 }
@@ -142,19 +142,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Actor created successfully",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.statusResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid request payload",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     },
                     "500": {
                         "description": "Failed to create actor",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     }
                 }
@@ -183,19 +183,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.statusResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid actor ID",
+                        "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     },
                     "500": {
-                        "description": "Failed to delete actor",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     }
                 }
@@ -235,21 +235,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Movie updated successfully",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.statusResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid movie ID\" or \"Invalid request payload",
+                        "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     },
                     "500": {
-                        "description": "Failed to update movie",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     }
                 }
@@ -267,6 +267,7 @@ const docTemplate = `{
                 "tags": [
                     "Movies"
                 ],
+                "summary": "Create Movie",
                 "parameters": [
                     {
                         "description": "Movie object",
@@ -280,18 +281,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Movie created successfully"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.statusResponse"
+                        }
                     },
                     "400": {
-                        "description": "Invalid request payload",
+                        "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     },
                     "500": {
-                        "description": "Failed to create movie",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     }
                 }
@@ -318,18 +322,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Movie deleted successfully"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.statusResponse"
+                        }
                     },
                     "400": {
-                        "description": "Invalid movie ID",
+                        "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     },
                     "500": {
-                        "description": "Failed to delete movie",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     }
                 }
@@ -367,9 +374,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Failed to get movies",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     }
                 }
@@ -407,9 +414,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Failed to get movies",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     }
                 }
@@ -447,15 +454,15 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Unmarshalling",
+                        "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     },
                     "500": {
-                        "description": "Generating Token",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/handlers.errorResponse"
                         }
                     }
                 }
@@ -503,6 +510,14 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.errorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.signInInput": {
             "type": "object",
             "required": [
@@ -522,6 +537,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.statusResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
                     "type": "string"
                 }
             }

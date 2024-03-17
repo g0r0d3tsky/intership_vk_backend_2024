@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"cinema_service/internal/usecase"
 	"context"
 	"encoding/json"
 	"net/http"
 )
 
+//go:generate mockgen -source=user.go -destination=mocks/userServiceMock.go
+
 type UserService interface {
 	GenerateToken(ctx context.Context, login string, password string) (string, error)
-	ParseToken(token string) (*usecase.UserInfo, error)
 }
 
 type UserHandler struct {
@@ -36,21 +36,23 @@ type signInResponse struct {
 // @Produce json
 // @Param sigIn body signInInput true "Sign In Input"
 // @Success 200 {object} signInResponse "Token response"
-// @Failure 400 {string} 400 "Unmarshalling"
-// @Failure 500 {string} 500 "Generating Token"
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
 // @Router /signIn [post]
 func (s *UserHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	var input signInInput
 
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		newErrorResponse(w, http.StatusBadRequest,  "Unmarshalling error",
+		)
 		return
 	}
 
 	token, err := s.service.GenerateToken(r.Context(), input.Login, input.Password)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		newErrorResponse(w, http.StatusInternalServerError,  "Generating Token error",
+		)
 		return
 	}
 
@@ -65,6 +67,8 @@ func (s *UserHandler) signIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+
 
 func (h *UserHandler) RegisterUser(mux *http.ServeMux) *http.ServeMux {
 	mux.HandleFunc("POST /api/v1/signIn", h.signIn)
