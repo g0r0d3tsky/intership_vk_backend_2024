@@ -19,20 +19,26 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "jwt": []
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Retrieves a list of actors",
                 "consumes": [
                     "application/json"
                 ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "Actors"
                 ],
                 "summary": "Get Actors",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Actor ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Actors retrieved successfully",
@@ -51,7 +57,7 @@ const docTemplate = `{
             "put": {
                 "security": [
                     {
-                        "jwt": []
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Updates actor information based on the input data.",
@@ -107,7 +113,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "jwt": []
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Creates a new actor",
@@ -156,7 +162,7 @@ const docTemplate = `{
             "delete": {
                 "security": [
                     {
-                        "jwt": []
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Deletes an actor based on the provided actor ID.",
@@ -196,48 +202,10 @@ const docTemplate = `{
             }
         },
         "/movies": {
-            "get": {
-                "security": [
-                    {
-                        "jwt": []
-                    }
-                ],
-                "description": "Retrieves movies based on a filter.",
-                "tags": [
-                    "Movies"
-                ],
-                "summary": "Get Movies by Filter",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Filter",
-                        "name": "filter",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Movie"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to get movies",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
             "put": {
                 "security": [
                     {
-                        "jwt": []
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Updates an existing movie",
@@ -251,7 +219,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Movie ID",
-                        "name": "movie_id",
+                        "name": "id",
                         "in": "query",
                         "required": true
                     },
@@ -289,7 +257,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "jwt": []
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Creates a new movie",
@@ -331,7 +299,7 @@ const docTemplate = `{
             "delete": {
                 "security": [
                     {
-                        "jwt": []
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Deletes a movie",
@@ -343,7 +311,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Movie ID",
-                        "name": "movie_id",
+                        "name": "id",
                         "in": "query",
                         "required": true
                     }
@@ -367,11 +335,51 @@ const docTemplate = `{
                 }
             }
         },
+        "/movies/filter": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves movies based on a filter.",
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Get Movies by Filter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter",
+                        "name": "filter",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Movie"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to get movies",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/movies/snippet": {
             "get": {
                 "security": [
                     {
-                        "jwt": []
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Retrieves movies based on a snippet",
@@ -568,17 +576,12 @@ const docTemplate = `{
         }
     },
     "securityDefinitions": {
-        "apiKey": {
+        "ApiKeyAuth": {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
         }
-    },
-    "security": [
-        {
-            "jwt": []
-        }
-    ]
+    }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it

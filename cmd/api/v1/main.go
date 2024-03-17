@@ -27,12 +27,10 @@ import (
 // @description This is the API documentation for the Cinema Service.
 // @host localhost:8080
 // @BasePath /api/v1/
-// @securityDefinitions.apiKey apiKey
+
+// @securityDefinitions.apikey ApiKeyAuth
 // @in header
 // @name Authorization
-// @securityDefinitions.jwt apiKey
-// @tokenUrl http://localhost:8080/api/v1/signIn
-// @security jwt
 func main() {
 	err := godotenv.Load()
 	if err != nil {

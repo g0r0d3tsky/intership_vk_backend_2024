@@ -30,7 +30,7 @@ func NewMovieHandler(service MovieService) *MovieHandler {
 // @Description Creates a new movie
 // @Tags Movies
 // @Accept json
-// @Security jwt
+// @Security ApiKeyAuth
 // @Param movie body models.Movie true "Movie object"
 // @Success 201 "Movie created successfully"
 // @Failure 400 {string} string "Invalid request payload"
@@ -63,16 +63,22 @@ func (h *MovieHandler) CreateMovieHandler(w http.ResponseWriter, r *http.Request
 // @Description Updates an existing movie
 // @Tags Movies
 // @Accept json
-// @Security jwt
-// @Param movie_id query string true "Movie ID"
+// @Security ApiKeyAuth
+// @Param id query string true "Movie ID"
 // @Param movie body models.Movie true "Movie object"
-// @Success 200 {string}  string "Movie updated successfully"
+// @Success 200 {string} string "Movie updated successfully"
 // @Failure 400 {string} string "Invalid movie ID" or "Invalid request payload"
 // @Failure 500 {string} string "Failed to update movie"
 // @Router /movies [put]
 func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	movieIDStr := r.URL.Query().Get("id")
-	_, err := uuid.Parse(movieIDStr)
+	if movieIDStr == "" {
+		http.Error(w, "Movie ID parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	// Проверка валидности movie_id
+	id, err := uuid.Parse(movieIDStr)
 	if err != nil {
 		http.Error(w, "Invalid movie ID", http.StatusBadRequest)
 		return
@@ -84,12 +90,15 @@ func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
+
 	movie := &domain.Movie{
+		ID:          id,
 		Title:       input.Title,
 		Description: input.Description,
 		Date:        input.Date,
 		Rating:      input.Rating,
 	}
+
 	err = h.service.UpdateMovie(r.Context(), movie)
 	if err != nil {
 		http.Error(w, "Failed to update movie", http.StatusInternalServerError)
@@ -103,14 +112,20 @@ func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request
 // @Summary Delete Movie
 // @Description Deletes a movie
 // @Tags Movies
-// @Security jwt
-// @Param movie_id query string true "Movie ID"
+// @Security ApiKeyAuth
+// @Param id query string true "Movie ID"
 // @Success 200 "Movie deleted successfully"
 // @Failure 400 {string} string "Invalid movie ID"
 // @Failure 500 {string} string "Failed to delete movie"
 // @Router /movies [delete]
 func (h *MovieHandler) DeleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 	movieIDStr := r.URL.Query().Get("id")
+	if movieIDStr == "" {
+		http.Error(w, "Movie ID parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	// Проверка валидности movie_id
 	movieID, err := uuid.Parse(movieIDStr)
 	if err != nil {
 		http.Error(w, "Invalid movie ID", http.StatusBadRequest)
@@ -130,14 +145,19 @@ func (h *MovieHandler) DeleteMovieHandler(w http.ResponseWriter, r *http.Request
 // @Summary Get Movies by Filter
 // @Description Retrieves movies based on a filter.
 // @Tags Movies
-// @Security jwt
+// @Security ApiKeyAuth
 // @Param filter query string true "Filter"
 // @Success 200 {array} models.Movie
 // @Failure 500 {string} 500 "Failed to encode movies"
 // @Failure 500 {string} 500 "Failed to get movies"
-// @Router /movies [get]
+// @Router /movies/filter [get]
 func (h *MovieHandler) GetMoviesFilterHandler(w http.ResponseWriter, r *http.Request) {
 	filter := r.URL.Query().Get("filter")
+
+	if filter == "" {
+		http.Error(w, "Filter parameter is required", http.StatusNotFound)
+		return
+	}
 
 	movies, err := h.service.GetMoviesFilter(r.Context(), filter)
 	if err != nil {
@@ -156,14 +176,19 @@ func (h *MovieHandler) GetMoviesFilterHandler(w http.ResponseWriter, r *http.Req
 // @Summary Get Movies by Snippet
 // @Description Retrieves movies based on a snippet
 // @Tags Movies
-// @Security jwt
+// @Security ApiKeyAuth
 // @Param snippet query string true "Snippet"
 // @Success 200 {array} models.Movie
-// @Failure 500 {string} 500 "Failed to encode movies" 
-// @Failure 500 {string} 500 "Failed to get movies"
+// @Failure 500 {string} string "Failed to encode movies"
+// @Failure 500 {string} string "Failed to get movies"
 // @Router /movies/snippet [get]
 func (h *MovieHandler) GetMoviesBySnippetHandler(w http.ResponseWriter, r *http.Request) {
 	snippet := r.URL.Query().Get("snippet")
+
+	if snippet == "" {
+		http.Error(w, "Snippet parameter is required", http.StatusNotFound)
+		return
+	}
 
 	movies, err := h.service.GetMoviesBySnippet(r.Context(), snippet)
 	if err != nil {
@@ -181,10 +206,10 @@ func (h *MovieHandler) GetMoviesBySnippetHandler(w http.ResponseWriter, r *http.
 // TODO: authorization
 func (h *MovieHandler) RegisterMovie(mux *http.ServeMux,
 	authentication Middleware, authorization Middleware) *http.ServeMux {
-	mux.HandleFunc("GET /api/v1/movies/filter/{filter}", authentication(h.GetMoviesFilterHandler))
-	mux.HandleFunc("GET /api/v1/movies/snippet/{snippet}", authentication(h.GetMoviesBySnippetHandler))
-	mux.HandleFunc("POST /api/v1/movies/", authentication(authorization(h.CreateMovieHandler)))
-	mux.HandleFunc("PUT /api/v1/movies/{id}", authentication(authorization(h.UpdateMovieHandler)))
-	mux.HandleFunc("DELETE /api/v1/movies/{id}", authentication(authorization(h.DeleteMovieHandler)))
+	mux.HandleFunc("GET /api/v1/movies/filter", authentication(h.GetMoviesFilterHandler))
+	mux.HandleFunc("GET /api/v1/movies/snippet", authentication(h.GetMoviesBySnippetHandler))
+	mux.HandleFunc("POST /api/v1/movies", authentication(authorization(h.CreateMovieHandler)))
+	mux.HandleFunc("PUT /api/v1/movies", authentication(authorization(h.UpdateMovieHandler)))
+	mux.HandleFunc("DELETE /api/v1/movies", authentication(authorization(h.DeleteMovieHandler)))
 	return mux
 }

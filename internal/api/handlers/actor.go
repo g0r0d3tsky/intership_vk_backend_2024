@@ -33,7 +33,7 @@ func NewActorHandler(service ActorService) *ActorHandler {
 // @Tags Actors
 // @Accept json
 // @Produce json
-// @Security jwt
+// @Security ApiKeyAuth
 // @Param actor body models.Actor true "Actor object"
 // @Success 201 {string} string "Actor created successfully"
 // @Failure 400 {string} string "Invalid request payload"
@@ -66,7 +66,7 @@ func (h *ActorHandler) CreateActorHandler(w http.ResponseWriter, r *http.Request
 // @Tags Actors
 // @Accept json
 // @Produce json
-// @Security jwt
+// @Security ApiKeyAuth
 // @Param id query string true "Actor ID"
 // @Param actor body models.Actor true "Updated actor information"
 // @Success 200 {string} string "OK"
@@ -75,7 +75,13 @@ func (h *ActorHandler) CreateActorHandler(w http.ResponseWriter, r *http.Request
 // @Router /actors [put]
 func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request) {
 	actorIDStr := r.URL.Query().Get("id")
-	_, err := uuid.Parse(actorIDStr)
+	if actorIDStr == "" {
+		http.Error(w, "Actor ID parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	// Проверка валидности id
+	id, err := uuid.Parse(actorIDStr)
 	if err != nil {
 		http.Error(w, "Invalid actor ID", http.StatusBadRequest)
 		return
@@ -89,10 +95,12 @@ func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	actor := &domain.Actor{
+		ID:      id,
 		Name:    input.Name,
 		Surname: input.Surname,
 		Sex:     input.Sex,
 	}
+
 	err = h.service.UpdateActor(r.Context(), actor)
 	if err != nil {
 		http.Error(w, "Failed to update actor", http.StatusInternalServerError)
@@ -106,7 +114,7 @@ func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request
 // @Summary Delete an actor
 // @Description Deletes an actor based on the provided actor ID.
 // @Tags Actors
-// @Security jwt
+// @Security ApiKeyAuth
 // @Param id query string true "Actor ID"
 // @Success 200 {string} string "OK"
 // @Failure 400 {string} string "Invalid actor ID"
@@ -114,6 +122,12 @@ func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request
 // @Router /actors [delete]
 func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 	actorIDStr := r.URL.Query().Get("id")
+	if actorIDStr == "" {
+		http.Error(w, "Actor ID parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	// Проверка валидности id
 	actorID, err := uuid.Parse(actorIDStr)
 	if err != nil {
 		http.Error(w, "Invalid actor ID", http.StatusBadRequest)
@@ -134,8 +148,8 @@ func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request
 // @Description Retrieves a list of actors
 // @Tags Actors
 // @Accept json
-// @Produce json
-// @Security jwt
+// @Param id path int true "Actor ID"
+// @Security ApiKeyAuth
 // @Success 200 {object} models.ActorMovies "Actors retrieved successfully"
 // @Failure 500 {string} string "Failed to get actors"
 // @Router /actors [get]
@@ -162,12 +176,14 @@ func (h *ActorHandler) GetActorsHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 }
+
 // TODO: authorization
 func (h *ActorHandler) RegisterActor(mux *http.ServeMux,
 	authentication Middleware, authorization Middleware) *http.ServeMux {
-	mux.HandleFunc("GET /api/v1/actors/", authentication(h.GetActorsHandler))
-	mux.HandleFunc("POST /api/v1/actors/", authentication(authorization(h.CreateActorHandler)))
-	mux.HandleFunc("PUT /api/v1/actors/{id}", authentication(authorization(h.UpdateActorHandler)))
-	mux.HandleFunc("DELETE /api/v1/actors/{id}", authentication(authorization(h.DeleteActorHandler)))
+	mux.HandleFunc("GET /api/v1/actors", authentication(h.GetActorsHandler))
+	mux.HandleFunc("POST /api/v1/actors", authentication(authorization(h.CreateActorHandler)))
+	mux.HandleFunc("PUT /api/v1/actors", authentication(authorization(h.UpdateActorHandler)))
+	mux.HandleFunc("DELETE /api/v1/actors", authentication(authorization(h.DeleteActorHandler)))
 	return mux
 }
+//TODO: пофикси удаление из таблиц
