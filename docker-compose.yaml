@@ -1,13 +1,31 @@
 version: '3'
 services:
-  postgres:
-    container_name: movies
-    image: postgres:latest
+
+
+  cinema_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - 5432:5432
+      - 8080:8080
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    networks:
+        - internal
+
+  postgres:
+    container_name: intership_vk
+    image: postgres:latest
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
       - /var/lib/postgresql/data:/var/lib/postgresql/data
       - ./internal/repository/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - internal
+networks:
+  internal:
+    driver: bridge  
