@@ -21,7 +21,6 @@ jobs:
       - name: Build
         working-directory: ./intership_vk_backend_2024
         run: |
-          cd intership_vk_backend_2024
           go mod tidy
           go build -v ./...
 
@@ -34,6 +33,5 @@ jobs:
       - name: Test
         working-directory: ./intership_vk_backend_2024
         run: |
-          cd intership_vk_backend_2024
           go mod tidy
           go test -v -race -coverpkg=./... ./...
