@@ -27,7 +27,7 @@ func (s *StorageMovie) GetMovieByID(ctx context.Context, movieID uuid.UUID) (*do
 		ctx,
 		`SELECT id, title, description, rating, created_at FROM "movies" u WHERE u.id = $1`, movieID,
 	).Scan(&movie.ID, &movie.Title, &movie.Description, &movie.Rating, &movie.Rating, &movie.Date); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get movie by id: %w", err)
 	}
 
 	return movie, nil
@@ -39,7 +39,7 @@ func (s *StorageMovie) CreateMovie(ctx context.Context, movie *domain.Movie) err
 		&movie.ID, &movie.Title, &movie.Description, &movie.Rating, &movie.Rating, &movie.Date,
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("create movie: %w", err)
 	}
 	return nil
 }
@@ -49,22 +49,22 @@ func (s *StorageMovie) GetMovies(ctx context.Context) ([]*domain.Movie, error) {
 		ctx,
 		`SELECT id, title, description, rating, created_at FROM movies`)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get movies: %w", err)
 	}
-	defer rows.Close() // Закрытие результата запроса перед выходом из функции
+	defer rows.Close() 
 
 	for rows.Next() {
 		movie := &domain.Movie{}
 
 		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.Rating, &movie.Date); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("get movies: %w", err)
 		}
 
 		movies = append(movies, movie)
 	}
 
-	if err := rows.Err(); err != nil { // Проверка ошибки после цикла
-		return nil, err
+	if err := rows.Err(); err != nil { 
+		return nil, fmt.Errorf("get movies: %w", err)
 	}
 
 	return movies, nil
@@ -81,7 +81,7 @@ func (s *StorageMovie) GetMoviesBySnippet(ctx context.Context, snippet string) (
 		OR actors.name LIKE '%' || $1 || '%'`,
 		snippet)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get movie by snippet: %w", err)
 	}
 	for rows.Next() {
 		movie := &domain.Movie{}
@@ -100,8 +100,7 @@ func (s *StorageMovie) UpdateMovie(ctx context.Context, movie *domain.Movie) err
 		WHERE id = $1`,
 		&movie.ID, &movie.Title, &movie.Description, &movie.Rating, &movie.Date,
 	); err != nil {
-		fmt.Printf("repo repo %w", err)
-		return err
+		return fmt.Errorf("update movie: %w", err)
 	}
 	return nil
 }
@@ -110,7 +109,7 @@ func (s *StorageMovie) DeleteMovie(ctx context.Context, movieID uuid.UUID) error
 		`DELETE FROM "movies" WHERE id=$1`,
 		movieID,
 	); err != nil {
-		return err
+		return fmt.Errorf("delete movie: %w", err)
 	}
 	return nil
 }

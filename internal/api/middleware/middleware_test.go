@@ -36,7 +36,7 @@ func TestAuthenticateExecute(t *testing.T) {
 	var capturedUserInfo *usecase.UserInfo
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handlerCalled = true
-		capturedUserInfo = r.Context().Value(userCtx).(*usecase.UserInfo)
+		capturedUserInfo = r.Context().Value(UserCtx).(*usecase.UserInfo)
 
 		w.WriteHeader(http.StatusOK)
 	})
@@ -158,12 +158,12 @@ func TestRequireAdmin(t *testing.T) {
 	}{
 		{
 			name:                 "Correct Admin context",
-			ctx:                  context.WithValue(context.Background(), userCtx, adminUser),
+			ctx:                  context.WithValue(context.Background(), UserCtx, adminUser),
 			expectedResponseBody: "",
 		},
 		{
 			name:                 "Correct User context",
-			ctx:                  context.WithValue(context.Background(), userCtx, User),
+			ctx:                  context.WithValue(context.Background(), UserCtx, User),
 			expectedResponseBody: `{"error":"Access denied"}`,
 		},
 		{

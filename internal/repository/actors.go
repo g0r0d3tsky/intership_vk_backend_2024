@@ -3,7 +3,7 @@ package repository
 import (
 	"cinema_service/internal/domain"
 	"context"
-
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pkg/errors"
@@ -27,8 +27,7 @@ func (s *StorageActor) CreateActor(ctx context.Context, act *domain.Actor) error
 			VALUES ($1, $2, $3, $4, $5)`,
 		&act.ID, &act.Name, &act.Surname, &act.Sex, &act.Birthdate,
 	); err != nil {
-		//TODO:
-		return err
+		return fmt.Errorf("create actor: %w", err)
 	}
 	return nil
 }
@@ -39,7 +38,7 @@ func (s *StorageActor) UpdateActor(ctx context.Context, act *domain.Actor) error
               WHERE id = $1`,
 		&act.ID, &act.Name, &act.Surname, &act.Sex, &act.Birthdate,
 	); err != nil {
-		return err
+		return fmt.Errorf("update actor: %w", err)
 	}
 	return nil
 }
@@ -52,7 +51,7 @@ func (s *StorageActor) GetActors(ctx context.Context) (map[*domain.Actor][]*doma
 		INNER JOIN movies m ON am.movies_id = m.id
 	`)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get actors: %w", err)
 	}
 	defer rows.Close()
 	actorFilms := make(map[*domain.Actor][]*domain.Movie)
@@ -64,7 +63,7 @@ func (s *StorageActor) GetActors(ctx context.Context) (map[*domain.Actor][]*doma
 			&actor.ID, &actor.Name, &actor.Surname, &actor.Sex, &actor.Birthdate,
 			&movie.ID, &movie.Title, &movie.Description, &movie.Rating, &movie.Date,
 		); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("get actors: %w", err)
 		}
 
 		var existingActor *domain.Actor
@@ -79,12 +78,11 @@ func (s *StorageActor) GetActors(ctx context.Context) (map[*domain.Actor][]*doma
 			existingActor = actor
 			actors = append(actors, existingActor)
 		}
-		//TODO: how to store films for actors?
 		actorFilms[existingActor] = append(actorFilms[existingActor], movie)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get actors: %w", err)
 	}
 
 	return actorFilms, nil

@@ -10,9 +10,10 @@ import (
 	"strconv"
 	"strings"
 )
+type ContextKey string
 
 const (
-	userCtx = "user_info"
+	UserCtx ContextKey = "user_info"
 )
 
 //go:generate mockgen -source=middleware.go -destination=mocks/mock.go
@@ -58,14 +59,14 @@ func (m *UserMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 			handlers.NewErrorResponse(w, http.StatusUnauthorized, err.Error())
 			return
 		}
-		ctx := context.WithValue(r.Context(), userCtx, userInfo)
+		ctx := context.WithValue(r.Context(), UserCtx, userInfo)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 func (m *UserMiddleware) RequireAdmin(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, ok := r.Context().Value(userCtx).(*usecase.UserInfo)
+		user, ok := r.Context().Value(UserCtx).(*usecase.UserInfo)
 		if !ok {
 			slog.Error("User context not found")
 			handlers.NewErrorResponse(w, http.StatusUnauthorized, "User context not found")

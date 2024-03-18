@@ -28,7 +28,12 @@ func sendJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	w.Write(jsonResponse)
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		slog.Error("Failed to write header:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func NewErrorResponse(w http.ResponseWriter, statusCode int, message string) {
@@ -45,6 +50,11 @@ func NewErrorResponse(w http.ResponseWriter, statusCode int, message string) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(jsonResponse)
 	w.WriteHeader(statusCode)
-	w.Write(jsonResponse)
+	if err != nil {
+		slog.Error("Failed to write header:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }

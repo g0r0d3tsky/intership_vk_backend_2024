@@ -18,7 +18,6 @@ func Connect(c *config.Config) (*pgxpool.Pool, error) {
 	connectionString := c.PostgresDSN()
 
 	poolConfig, err := pgxpool.ParseConfig(connectionString)
-	//fmt.Println(connectionString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse pgx pool config: %w", err)
 	}
