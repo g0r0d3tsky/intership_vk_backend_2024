@@ -27,7 +27,6 @@ func NewMovieService(repo MovieRepo) *MovieService {
 	return &MovieService{repo: repo}
 }
 
-
 func (s *MovieService) CreateMovie(ctx context.Context, movie *domain.Movie) error {
 	err := s.repo.CreateMovie(ctx, movie)
 	if err != nil {
@@ -75,7 +74,7 @@ func (s *MovieService) GetMoviesFilter(ctx context.Context, filter string) ([]*d
 		sort.Slice(movies, func(i, j int) bool {
 			return movies[i].Rating > movies[j].Rating
 		})
-	case "created_at":
+	case "date":
 		sort.Slice(movies, func(i, j int) bool {
 			return movies[i].Date.After(movies[j].Date)
 		})

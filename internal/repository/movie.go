@@ -3,6 +3,8 @@ package repository
 import (
 	"cinema_service/internal/domain"
 	"context"
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -45,23 +47,28 @@ func (s *StorageMovie) GetMovies(ctx context.Context) ([]*domain.Movie, error) {
 	var movies []*domain.Movie
 	rows, err := s.db.Query(
 		ctx,
-		`SELECT  id, title, description, rating, created_at FROM "movies"`)
+		`SELECT id, title, description, rating, created_at FROM movies`)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close() // Закрытие результата запроса перед выходом из функции
+
 	for rows.Next() {
 		movie := &domain.Movie{}
 
-		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.Rating, &movie.Rating, &movie.Date); err != nil {
+		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.Rating, &movie.Date); err != nil {
 			return nil, err
 		}
 
 		movies = append(movies, movie)
 	}
 
+	if err := rows.Err(); err != nil { // Проверка ошибки после цикла
+		return nil, err
+	}
+
 	return movies, nil
 }
-
 func (s *StorageMovie) GetMoviesBySnippet(ctx context.Context, snippet string) ([]*domain.Movie, error) {
 	var movies []*domain.Movie
 	rows, err := s.db.Query(
@@ -90,9 +97,10 @@ func (s *StorageMovie) UpdateMovie(ctx context.Context, movie *domain.Movie) err
 	if _, err := s.db.Exec(
 		ctx,
 		`UPDATE "movies" SET title = $2, description = $3, rating = $4, created_at = $5
-              WHERE id = $1`,
-		&movie.ID, &movie.Title, &movie.Description, &movie.Rating, &movie.Rating, &movie.Date,
+		WHERE id = $1`,
+		&movie.ID, &movie.Title, &movie.Description, &movie.Rating, &movie.Date,
 	); err != nil {
+		fmt.Printf("repo repo %w", err)
 		return err
 	}
 	return nil

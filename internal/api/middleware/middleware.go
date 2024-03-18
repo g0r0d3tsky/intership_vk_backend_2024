@@ -51,32 +51,43 @@ func (m *UserMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		userInfo, err := m.service.ParseToken(headerParts[1])
+
+
+
 		if err != nil {
 			handlers.NewErrorResponse(w, http.StatusUnauthorized, err.Error())
 			return
 		}
-
 		ctx := context.WithValue(r.Context(), userCtx, userInfo)
-		r = r.WithContext(ctx)
-
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
+
 func (m *UserMiddleware) RequireAdmin(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user, ok := r.Context().Value(userCtx).(*usecase.UserInfo)
 		if !ok {
+			slog.Error("User context not found")
 			handlers.NewErrorResponse(w, http.StatusUnauthorized, "User context not found")
 			return
 		}
+
+		if user == nil {
+			slog.Error("User information is nil")
+			handlers.NewErrorResponse(w, http.StatusUnauthorized, "User information not found")
+			return
+		}
 		if user.Role != domain.ADMIN {
+			slog.Error("Access denied for non-admin user")
 			handlers.NewErrorResponse(w, http.StatusForbidden, "Access denied")
 			return
 		}
+
 		next.ServeHTTP(w, r)
 	})
 }
-func (m *UserMiddleware) LoggingMiddleware(next http.Handler) http.Handler {
+
+func (m *UserMiddleware) LoggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		mw := NewResponseWriter(w)
@@ -85,11 +96,7 @@ func (m *UserMiddleware) LoggingMiddleware(next http.Handler) http.Handler {
 		responseSize := mw.Size()
 
 		slog.Info(
-			"Method: %s, Path: %s, Status: %s, Size: %d bytes",
-			r.Method,
-			r.URL.Path,
-			strconv.Itoa(statusCode),
-			responseSize,
+			"request ", "Method" , r.Method,  "Path", r.URL.Path, "Status", strconv.Itoa(statusCode), "Size" , 	responseSize,
 		)
 	})
 }

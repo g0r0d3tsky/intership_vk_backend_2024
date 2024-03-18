@@ -5,13 +5,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"time"
 )
 
 const (
-	salt       = "some-salt"
+	//salt       = "some-salt"
 	signingKey = "some-signing-key"
 	tokenTTL   = 12 * time.Hour
 )
@@ -23,15 +24,13 @@ type UserInfo struct {
 
 type tokenClaims struct {
 	jwt.RegisteredClaims
-	userClaims *UserInfo
+	UserClaims UserInfo `json:"userClaims"`
 }
 
 //go:generate mockgen -source=user.go -destination=mocks/userMock.go
 
 type UserRepo interface {
 	GetUser(ctx context.Context, login string, password string) (*domain.User, error)
-	//CreateUser(ctx context.Context, u *domain.User) error
-	//DeleteUser(ctx context.Context, userID uuid.UUID) error
 }
 
 type UserService struct {
@@ -50,25 +49,6 @@ func (s *UserService) GetUser(ctx context.Context, login string, password string
 	return user, nil
 }
 
-// TODO: validation?
-// func (s *UserService) CreateUser(ctx context.Context, u *domain.User) error {
-// 	err := s.repo.CreateUser(ctx, u)
-// 	if err != nil {
-// 		return fmt.Errorf("create user: %w", err)
-// 	}
-
-// 	return nil
-// }
-
-// func (s *UserService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
-// 	err := s.repo.DeleteUser(ctx, userID)
-// 	if err != nil {
-// 		return fmt.Errorf("delete user: %w", err)
-// 	}
-
-// 	return nil
-// }
-
 func (s *UserService) GenerateToken(ctx context.Context, login string, password string) (string, error) {
 	user, err := s.GetUser(ctx, login, password)
 	if err != nil {
@@ -76,12 +56,13 @@ func (s *UserService) GenerateToken(ctx context.Context, login string, password 
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
-		jwt.RegisteredClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenTTL)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
-		&UserInfo{user.ID,
-			user.Role,
+		UserClaims: UserInfo{
+			UserID:   user.ID,
+			Role: user.Role,
 		},
 	})
 
@@ -93,18 +74,21 @@ func (s *UserService) GenerateToken(ctx context.Context, login string, password 
 	return signedToken, nil
 }
 
-func (s *UserService) ParseToken(token string) (*UserInfo, error) {
-	t, err := jwt.ParseWithClaims(token, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+func (s *UserService) ParseToken(accessToken string) (*UserInfo, error) {
+	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("invalid signing method")
+		}
+
 		return []byte(signingKey), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("parse token: %w", err)
+		return nil, err
+	}
+	
+	if claims, ok := token.Claims.(*tokenClaims); ok && token.Valid {
+		return &claims.UserClaims, nil
 	}
 
-	claims, ok := t.Claims.(*tokenClaims)
-	if !ok {
-		return nil, errors.New("token claims are not of type *tokenClaims")
-	}
-
-	return claims.userClaims, nil
+	return nil, errors.New("invalid token")
 }

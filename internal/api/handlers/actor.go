@@ -5,6 +5,7 @@ import (
 	"cinema_service/internal/domain"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -140,6 +141,7 @@ func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request
 		NewErrorResponse(w, http.StatusBadRequest, "Invalid actor ID")
 		return
 	}
+	fmt.Printf(" %+v", actorID)
 
 	err = h.service.DeleteActor(r.Context(), actorID)
 	if err != nil {
@@ -157,7 +159,6 @@ func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request
 // @Description Retrieves a list of actors
 // @Tags Actors
 // @Accept json
-// @Param id path int true "Actor ID"
 // @Security ApiKeyAuth
 // @Success 200 {object} models.ActorMovies "Actors retrieved successfully"
 // @Failure 500 {object} errorResponse
@@ -182,14 +183,12 @@ func (h *ActorHandler) GetActorsHandler(w http.ResponseWriter, r *http.Request) 
 	sendJSONResponse(w, http.StatusOK, actorMoviesList)
 }
 
-// TODO: authorization
 func (h *ActorHandler) RegisterActor(mux *http.ServeMux,
-	authentication Middleware, authorization Middleware) *http.ServeMux {
-	mux.HandleFunc("GET /api/v1/actors", authentication(h.GetActorsHandler))
-	mux.HandleFunc("POST /api/v1/actors", authentication(authorization(h.CreateActorHandler)))
-	mux.HandleFunc("PUT /api/v1/actors", authentication(authorization(h.UpdateActorHandler)))
-	mux.HandleFunc("DELETE /api/v1/actors", authentication(authorization(h.DeleteActorHandler)))
+	authentication Middleware, authorization Middleware, logging Middleware) *http.ServeMux {
+	mux.HandleFunc("GET /api/v1/actors", logging(authentication(h.GetActorsHandler)))
+	mux.HandleFunc("POST /api/v1/actors", logging(authentication(authorization(h.CreateActorHandler))))
+	mux.HandleFunc("PUT /api/v1/actors", logging(authentication(authorization(h.UpdateActorHandler))))
+	mux.HandleFunc("DELETE /api/v1/actors", logging(authentication(authorization(h.DeleteActorHandler))))
 	return mux
 }
 
-//TODO: пофикси удаление из таблиц

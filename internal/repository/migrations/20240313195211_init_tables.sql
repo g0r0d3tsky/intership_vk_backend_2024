@@ -24,7 +24,7 @@ CREATE TABLE "movies"
     "id"          UUID PRIMARY KEY,
     "title"       varchar NOT NULL,
     "description" varchar(1000),
-    "rating"      real CHECK (rating >= 0 AND rating <= 10),
+    "rating"      integer  CHECK (rating >= 0 AND rating <= 10),
     "created_at"  timestamp,
     CONSTRAINT length_constraint_title CHECK (LENGTH("title") >= 1 AND LENGTH("title") <= 150)
 );

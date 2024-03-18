@@ -3,8 +3,10 @@ package repository
 import (
 	"cinema_service/internal/domain"
 	"context"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/pkg/errors"
 )
 
 type StorageActor struct {
@@ -88,11 +90,22 @@ func (s *StorageActor) GetActors(ctx context.Context) (map[*domain.Actor][]*doma
 	return actorFilms, nil
 }
 func (s *StorageActor) DeleteActor(ctx context.Context, actorID uuid.UUID) error {
-	if _, err := s.db.Exec(ctx,
+	result, err := s.db.Exec(ctx,
 		`DELETE FROM "movies" WHERE id=$1`,
 		actorID,
-	); err != nil {
-		return err
+	)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete actor")
 	}
+
+	rowsAffected := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to get rows affected")
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("actor not found")
+	}
+
 	return nil
 }

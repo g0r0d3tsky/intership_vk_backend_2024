@@ -22,7 +22,7 @@ definitions:
       id:
         type: string
       rating:
-        type: integer
+        type: number
       title:
         type: string
     type: object
@@ -78,7 +78,7 @@ definitions:
       description:
         type: string
       rating:
-        type: integer
+        type: number
       title:
         type: string
     type: object
@@ -120,12 +120,6 @@ paths:
       consumes:
       - application/json
       description: Retrieves a list of actors
-      parameters:
-      - description: Actor ID
-        in: path
-        name: id
-        required: true
-        type: integer
       responses:
         "200":
           description: Actors retrieved successfully

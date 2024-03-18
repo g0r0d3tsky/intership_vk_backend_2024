@@ -30,15 +30,6 @@ const docTemplate = `{
                     "Actors"
                 ],
                 "summary": "Get Actors",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Actor ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "Actors retrieved successfully",
@@ -503,7 +494,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "rating": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "title": {
                     "type": "string"
@@ -590,7 +581,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "rating": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "title": {
                     "type": "string"

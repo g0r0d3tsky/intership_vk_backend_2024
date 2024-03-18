@@ -94,7 +94,6 @@ func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request
 		NewErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
-
 	movie := &domain.Movie{
 		ID:          id,
 		Title:       input.Title,
@@ -205,11 +204,11 @@ func (h *MovieHandler) GetMoviesBySnippetHandler(w http.ResponseWriter, r *http.
 
 // TODO: authorization
 func (h *MovieHandler) RegisterMovie(mux *http.ServeMux,
-	authentication Middleware, authorization Middleware) *http.ServeMux {
-	mux.HandleFunc("GET /api/v1/movies/filter", authentication(h.GetMoviesFilterHandler))
-	mux.HandleFunc("GET /api/v1/movies/snippet", authentication(h.GetMoviesBySnippetHandler))
-	mux.HandleFunc("POST /api/v1/movies", authentication(authorization(h.CreateMovieHandler)))
-	mux.HandleFunc("PUT /api/v1/movies", authentication(authorization(h.UpdateMovieHandler)))
-	mux.HandleFunc("DELETE /api/v1/movies", authentication(authorization(h.DeleteMovieHandler)))
+	authentication Middleware, authorization Middleware, logging Middleware) *http.ServeMux {
+	mux.HandleFunc("GET /api/v1/movies/filter", logging(authentication(h.GetMoviesFilterHandler)))
+	mux.HandleFunc("GET /api/v1/movies/snippet", logging(authentication(h.GetMoviesBySnippetHandler)))
+	mux.HandleFunc("POST /api/v1/movies", logging(authentication(authorization(h.CreateMovieHandler))))
+	mux.HandleFunc("PUT /api/v1/movies", logging(authentication(authorization(h.UpdateMovieHandler))))
+	mux.HandleFunc("DELETE /api/v1/movies", logging(authentication(authorization(h.DeleteMovieHandler))))
 	return mux
 }

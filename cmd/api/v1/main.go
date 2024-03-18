@@ -70,9 +70,9 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux = handlerActor.RegisterActor(mux, middlewareUser.Authenticate, middlewareUser.RequireAdmin)
-	mux = handlerMovie.RegisterMovie(mux, middlewareUser.Authenticate, middlewareUser.RequireAdmin)
-	mux = handlerUser.RegisterUser(mux)
+	mux = handlerActor.RegisterActor(mux, middlewareUser.Authenticate, middlewareUser.RequireAdmin, middlewareUser.LoggingMiddleware)
+	mux = handlerMovie.RegisterMovie(mux, middlewareUser.Authenticate, middlewareUser.RequireAdmin, middlewareUser.LoggingMiddleware)
+	mux = handlerUser.RegisterUser(mux, middlewareUser.LoggingMiddleware)
 	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 	server := &http.Server{
 		Addr:    net.JoinHostPort(c.Host, c.Port),

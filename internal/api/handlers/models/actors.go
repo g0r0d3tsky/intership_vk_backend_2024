@@ -6,7 +6,7 @@ import (
 )
 
 type Actor struct {
-	Name      string    `json:"name"`
+	Name      string    `json:"name,omitempty"`
 	Surname   string    `json:"surname,omitempty"`
 	Sex       string    `json:"sex,omitempty"`
 	Birthdate time.Time `json:"birthdate,omitempty"`
