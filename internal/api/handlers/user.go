@@ -39,20 +39,18 @@ type signInResponse struct {
 // @Failure 400 {object} errorResponse
 // @Failure 500 {object} errorResponse
 // @Router /signIn [post]
-func (s *UserHandler) signIn(w http.ResponseWriter, r *http.Request) {
+func (s *UserHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	var input signInInput
 
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
-		newErrorResponse(w, http.StatusBadRequest,  "Unmarshalling error",
-		)
+		NewErrorResponse(w, http.StatusBadRequest, "Unmarshalling error")
 		return
 	}
 
 	token, err := s.service.GenerateToken(r.Context(), input.Login, input.Password)
 	if err != nil {
-		newErrorResponse(w, http.StatusInternalServerError,  "Generating Token error",
-		)
+		NewErrorResponse(w, http.StatusInternalServerError, "Generating Token error")
 		return
 	}
 
@@ -68,9 +66,7 @@ func (s *UserHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
-
 func (h *UserHandler) RegisterUser(mux *http.ServeMux) *http.ServeMux {
-	mux.HandleFunc("POST /api/v1/signIn", h.signIn)
+	mux.HandleFunc("POST /api/v1/signIn", h.SignIn)
 	return mux
 }

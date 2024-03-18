@@ -45,7 +45,7 @@ func (h *ActorHandler) CreateActorHandler(w http.ResponseWriter, r *http.Request
 	var input models.Actor
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
-		newErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
+		NewErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *ActorHandler) CreateActorHandler(w http.ResponseWriter, r *http.Request
 	}
 	err = h.service.CreateActor(r.Context(), actor)
 	if err != nil {
-		newErrorResponse(w, http.StatusInternalServerError, "Failed to create actor")
+		NewErrorResponse(w, http.StatusInternalServerError, "Failed to create actor")
 		return
 	}
 
@@ -81,15 +81,14 @@ func (h *ActorHandler) CreateActorHandler(w http.ResponseWriter, r *http.Request
 func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request) {
 	actorIDStr := r.URL.Query().Get("id")
 	if actorIDStr == "" {
-		newErrorResponse(w, http.StatusBadRequest,"Actor ID parameter is required",
-		)
+		NewErrorResponse(w, http.StatusBadRequest, "Actor ID parameter is required")
 		return
 	}
 
 	id, err := uuid.Parse(actorIDStr)
 	if err != nil {
-		newErrorResponse(w, http.StatusBadRequest,
-		"Invalid actor ID",
+		NewErrorResponse(w, http.StatusBadRequest,
+			"Invalid actor ID",
 		)
 		return
 	}
@@ -97,8 +96,7 @@ func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request
 	var input models.Actor
 	err = json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
-		newErrorResponse(w, http.StatusBadRequest, "Invalid request payload",
-		)
+		NewErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
@@ -111,8 +109,7 @@ func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request
 
 	err = h.service.UpdateActor(r.Context(), actor)
 	if err != nil {
-		newErrorResponse(w, http.StatusInternalServerError,  "Failed to update actor",
-		)
+		NewErrorResponse(w, http.StatusInternalServerError, "Failed to update actor")
 		return
 	}
 
@@ -134,22 +131,19 @@ func (h *ActorHandler) UpdateActorHandler(w http.ResponseWriter, r *http.Request
 func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 	actorIDStr := r.URL.Query().Get("id")
 	if actorIDStr == "" {
-		newErrorResponse(w, http.StatusBadRequest,  "Actor ID parameter is required",
-		)
+		NewErrorResponse(w, http.StatusBadRequest, "Actor ID parameter is required")
 		return
 	}
 
 	actorID, err := uuid.Parse(actorIDStr)
 	if err != nil {
-		newErrorResponse(w, http.StatusBadRequest,  "Invalid actor ID",
-		)
+		NewErrorResponse(w, http.StatusBadRequest, "Invalid actor ID")
 		return
 	}
 
 	err = h.service.DeleteActor(r.Context(), actorID)
 	if err != nil {
-		newErrorResponse(w, http.StatusInternalServerError,  "Failed to delete actor",
-		)
+		NewErrorResponse(w, http.StatusInternalServerError, "Failed to delete actor")
 		return
 	}
 
@@ -171,8 +165,7 @@ func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request
 func (h *ActorHandler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 	actors, err := h.service.GetActors(r.Context())
 	if err != nil {
-		newErrorResponse(w, http.StatusInternalServerError, "Failed to get actors",
-		)
+		NewErrorResponse(w, http.StatusInternalServerError, "Failed to get actors")
 		return
 	}
 

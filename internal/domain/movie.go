@@ -10,5 +10,5 @@ type Movie struct {
 	Title       string
 	Description string
 	Date        time.Time
-	Rating      int
+	Rating      float32
 }

@@ -13,7 +13,6 @@ import (
 
 type MovieRepo interface {
 	CreateMovie(ctx context.Context, movie *domain.Movie) error
-	//	GetMovieByID(ctx context.Context, movieID uuid.UUID) (*domain.Movie, error)
 	GetMovies(ctx context.Context) ([]*domain.Movie, error)
 	GetMoviesBySnippet(ctx context.Context, snippet string) ([]*domain.Movie, error)
 	UpdateMovie(ctx context.Context, movie *domain.Movie) error
@@ -27,6 +26,7 @@ type MovieService struct {
 func NewMovieService(repo MovieRepo) *MovieService {
 	return &MovieService{repo: repo}
 }
+
 
 func (s *MovieService) CreateMovie(ctx context.Context, movie *domain.Movie) error {
 	err := s.repo.CreateMovie(ctx, movie)

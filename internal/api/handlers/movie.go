@@ -43,7 +43,7 @@ func (h *MovieHandler) CreateMovieHandler(w http.ResponseWriter, r *http.Request
 	var input models.Movie
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
-		newErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
+		NewErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
@@ -55,7 +55,7 @@ func (h *MovieHandler) CreateMovieHandler(w http.ResponseWriter, r *http.Request
 	}
 	err = h.service.CreateMovie(r.Context(), movie)
 	if err != nil {
-		newErrorResponse(w, http.StatusInternalServerError, "Failed to create movie")
+		NewErrorResponse(w, http.StatusInternalServerError, "Failed to create movie")
 		return
 	}
 
@@ -78,20 +78,20 @@ func (h *MovieHandler) CreateMovieHandler(w http.ResponseWriter, r *http.Request
 func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	movieIDStr := r.URL.Query().Get("id")
 	if movieIDStr == "" {
-		newErrorResponse(w, http.StatusBadRequest, "Movie ID parameter is required")
+		NewErrorResponse(w, http.StatusBadRequest, "Movie ID parameter is required")
 		return
 	}
 
 	id, err := uuid.Parse(movieIDStr)
 	if err != nil {
-		newErrorResponse(w, http.StatusBadRequest, "Invalid movie ID")
+		NewErrorResponse(w, http.StatusBadRequest, "Invalid movie ID")
 		return
 	}
 
 	var input models.Movie
 	err = json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
-		newErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
+		NewErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
@@ -105,9 +105,7 @@ func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request
 
 	err = h.service.UpdateMovie(r.Context(), movie)
 	if err != nil {
-		sendJSONResponse(w, http.StatusInternalServerError, errorResponse{
-			Message: "Failed to update movie",
-		})
+		NewErrorResponse(w, http.StatusInternalServerError, "Failed to update movie")
 		return
 	}
 
@@ -129,19 +127,19 @@ func (h *MovieHandler) UpdateMovieHandler(w http.ResponseWriter, r *http.Request
 func (h *MovieHandler) DeleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 	movieIDStr := r.URL.Query().Get("id")
 	if movieIDStr == "" {
-		newErrorResponse(w, http.StatusBadRequest, "Movie ID parameter is required")
+		NewErrorResponse(w, http.StatusBadRequest, "Movie ID parameter is required")
 		return
 	}
 
 	movieID, err := uuid.Parse(movieIDStr)
 	if err != nil {
-		newErrorResponse(w, http.StatusBadRequest, "Invalid movie ID")
+		NewErrorResponse(w, http.StatusBadRequest, "Invalid movie ID")
 		return
 	}
 
 	err = h.service.DeleteMovie(r.Context(), movieID)
 	if err != nil {
-		newErrorResponse(w, http.StatusInternalServerError, "Failed to delete movie")
+		NewErrorResponse(w, http.StatusInternalServerError, "Failed to delete movie")
 		return
 	}
 
@@ -164,17 +162,17 @@ func (h *MovieHandler) GetMoviesFilterHandler(w http.ResponseWriter, r *http.Req
 	filter := r.URL.Query().Get("filter")
 
 	if filter == "" {
-		newErrorResponse(w, http.StatusBadRequest, "Filter parameter is required")
+		NewErrorResponse(w, http.StatusBadRequest, "Filter parameter is required")
 		return
 	}
 
 	movies, err := h.service.GetMoviesFilter(r.Context(), filter)
 	if err != nil {
-		newErrorResponse(w, http.StatusInternalServerError, "Failed to get movies")
+		NewErrorResponse(w, http.StatusInternalServerError, "Failed to get movies")
 		return
 	}
 
-	sendJSONResponse(w, http.StatusInternalServerError, movies)
+	sendJSONResponse(w, http.StatusOK, movies)
 
 }
 
@@ -192,22 +190,17 @@ func (h *MovieHandler) GetMoviesBySnippetHandler(w http.ResponseWriter, r *http.
 	snippet := r.URL.Query().Get("snippet")
 
 	if snippet == "" {
-		newErrorResponse(w, http.StatusBadRequest, "Snippet parameter is required")
+		NewErrorResponse(w, http.StatusBadRequest, "Snippet parameter is required")
 		return
 	}
 
 	movies, err := h.service.GetMoviesBySnippet(r.Context(), snippet)
 	if err != nil {
-		newErrorResponse(w, http.StatusInternalServerError, "Failed to get movies")
+		NewErrorResponse(w, http.StatusInternalServerError, "Failed to get movies")
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(movies)
-	if err != nil {
-		newErrorResponse(w, http.StatusInternalServerError,  "Failed to encode movies",
-		)
-		return
-	}
+	sendJSONResponse(w, http.StatusOK, movies)
 }
 
 // TODO: authorization

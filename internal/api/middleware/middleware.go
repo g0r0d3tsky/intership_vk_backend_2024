@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"cinema_service/internal/api/handlers"
 	"cinema_service/internal/domain"
 	"cinema_service/internal/usecase"
 	"context"
@@ -8,13 +9,13 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 )
 
 const (
 	userCtx = "user_info"
 )
 
+//go:generate mockgen -source=middleware.go -destination=mocks/mock.go
 type UserService interface {
 	GenerateToken(ctx context.Context, login string, password string) (string, error)
 	ParseToken(token string) (*usecase.UserInfo, error)
@@ -34,24 +35,24 @@ func (m *UserMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 		authorizationHeader := r.Header.Get("Authorization")
 
 		if authorizationHeader == "" {
-			http.Error(w, "empty auth header", http.StatusUnauthorized)
+			handlers.NewErrorResponse(w, http.StatusUnauthorized, "empty auth header")
 			return
 		}
 
 		headerParts := strings.Split(authorizationHeader, " ")
 		if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-			http.Error(w, "invalid auth header", http.StatusUnauthorized)
+			handlers.NewErrorResponse(w, http.StatusUnauthorized, "invalid auth header")
 			return
 		}
 
 		if len(headerParts[1]) == 0 || len(strings.Split(headerParts[1], "")) == 0 {
-			http.Error(w, "token is empty", http.StatusUnauthorized)
+			handlers.NewErrorResponse(w, http.StatusUnauthorized, "token is empty")
 			return
 		}
 
 		userInfo, err := m.service.ParseToken(headerParts[1])
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			handlers.NewErrorResponse(w, http.StatusUnauthorized, err.Error())
 			return
 		}
 
@@ -63,13 +64,13 @@ func (m *UserMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 }
 func (m *UserMiddleware) RequireAdmin(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, ok := r.Context().Value(userCtx).(*domain.User)
+		user, ok := r.Context().Value(userCtx).(*usecase.UserInfo)
 		if !ok {
-			http.Error(w, "User context not found", http.StatusUnauthorized)
+			handlers.NewErrorResponse(w, http.StatusUnauthorized, "User context not found")
 			return
 		}
 		if user.Role != domain.ADMIN {
-			http.Error(w, "Access denied", http.StatusForbidden)
+			handlers.NewErrorResponse(w, http.StatusForbidden, "Access denied")
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -77,23 +78,18 @@ func (m *UserMiddleware) RequireAdmin(next http.HandlerFunc) http.HandlerFunc {
 }
 func (m *UserMiddleware) LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		startTime := time.Now()
 
 		mw := NewResponseWriter(w)
 		next.ServeHTTP(mw, r)
 		statusCode := mw.StatusCode()
 		responseSize := mw.Size()
 
-		endTime := time.Now()
-		elapsedTime := endTime.Sub(startTime)
-
 		slog.Info(
-			"Method: %s, Path: %s, Status: %s, Size: %d bytes, Time: %s",
+			"Method: %s, Path: %s, Status: %s, Size: %d bytes",
 			r.Method,
 			r.URL.Path,
 			strconv.Itoa(statusCode),
 			responseSize,
-			elapsedTime,
 		)
 	})
 }

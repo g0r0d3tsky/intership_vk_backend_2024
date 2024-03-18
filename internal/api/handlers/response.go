@@ -31,7 +31,7 @@ func sendJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Write(jsonResponse)
 }
 
-func newErrorResponse(w http.ResponseWriter, statusCode int, message string) {
+func NewErrorResponse(w http.ResponseWriter, statusCode int, message string) {
 	slog.Error(message)
 
 	response := errorResponse{
