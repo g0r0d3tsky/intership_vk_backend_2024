@@ -1,0 +1,378 @@
+basePath: /api/v1/
+definitions:
+  domain.Actor:
+    properties:
+      birthdate:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      sex:
+        type: string
+      surname:
+        type: string
+    type: object
+  domain.Movie:
+    properties:
+      date:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      rating:
+        type: number
+      title:
+        type: string
+    type: object
+  handlers.errorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  handlers.signInInput:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  handlers.signInResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  handlers.statusResponse:
+    properties:
+      status:
+        type: string
+    type: object
+  models.Actor:
+    properties:
+      birthdate:
+        type: string
+      name:
+        type: string
+      sex:
+        type: string
+      surname:
+        type: string
+    type: object
+  models.ActorMovies:
+    properties:
+      actor:
+        $ref: '#/definitions/domain.Actor'
+      movies:
+        items:
+          $ref: '#/definitions/domain.Movie'
+        type: array
+    type: object
+  models.Movie:
+    properties:
+      date:
+        type: string
+      description:
+        type: string
+      rating:
+        type: number
+      title:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is the API documentation for the Cinema Service.
+  title: Cinema Service API Documentation
+  version: "1.0"
+paths:
+  /actors:
+    delete:
+      description: Deletes an actor based on the provided actor ID.
+      parameters:
+      - description: Actor ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete an actor
+      tags:
+      - Actors
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of actors
+      responses:
+        "200":
+          description: Actors retrieved successfully
+          schema:
+            $ref: '#/definitions/models.ActorMovies'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get Actors
+      tags:
+      - Actors
+    post:
+      consumes:
+      - application/json
+      description: Creates a new actor
+      parameters:
+      - description: Actor object
+        in: body
+        name: actor
+        required: true
+        schema:
+          $ref: '#/definitions/models.Actor'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Actor created successfully
+          schema:
+            $ref: '#/definitions/handlers.statusResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "500":
+          description: Failed to create actor
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create Actor
+      tags:
+      - Actors
+    put:
+      consumes:
+      - application/json
+      description: Updates actor information based on the input data.
+      parameters:
+      - description: Actor ID
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Updated actor information
+        in: body
+        name: actor
+        required: true
+        schema:
+          $ref: '#/definitions/models.Actor'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update actor information
+      tags:
+      - Actors
+  /movies:
+    delete:
+      description: Deletes a movie
+      parameters:
+      - description: Movie ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete Movie
+      tags:
+      - Movies
+    post:
+      consumes:
+      - application/json
+      description: Creates a new movie
+      parameters:
+      - description: Movie object
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Movie'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create Movie
+      tags:
+      - Movies
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing movie
+      parameters:
+      - description: Movie ID
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Movie object
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Movie'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      security:
+      - ApiKeyAuth: []
+      tags:
+      - Movies
+  /movies/filter:
+    get:
+      description: Retrieves movies based on a filter.
+      parameters:
+      - description: Filter
+        in: query
+        name: filter
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Movie'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get Movies by Filter
+      tags:
+      - Movies
+  /movies/snippet:
+    get:
+      description: Retrieves movies based on a snippet
+      parameters:
+      - description: Snippet
+        in: query
+        name: snippet
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Movie'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get Movies by Snippet
+      tags:
+      - Movies
+  /signIn:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns a token
+      parameters:
+      - description: Sign In Input
+        in: body
+        name: sigIn
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.signInInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token response
+          schema:
+            $ref: '#/definitions/handlers.signInResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Sign In
+      tags:
+      - Authentication
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
